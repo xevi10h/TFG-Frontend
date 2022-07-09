@@ -1,0 +1,21 @@
+.generic {
+    width: 66%;
+    display: flex;
+}
+
+.weight {
+    padding: 2%;
+}
+
+.label {
+    display: block;
+    text-align: center;
+    line-height: 150%;
+    font-size: 12;
+}
+
+.range{
+    display: block;
+    width: 100%;
+    align-items: center
+}

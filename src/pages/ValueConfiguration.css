@@ -1,0 +1,26 @@
+.valueConfigBox {
+    background-color: rgba(1, 149, 255, 0.149);
+    border-radius: 30px;
+    width: 100;
+    margin-right: 15%;
+    margin-top: 5%;
+    margin-left: 15%;
+}
+
+.form {
+    margin: 5%;
+    font-size: x-large;
+}
+
+.check {
+    margin-top: 1%;
+}
+
+.title {
+    font-size: xx-large;
+}
+
+.button {
+    margin-top: 5%;
+    font-size: x-large;
+}
