@@ -4,21 +4,56 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Warehouse from "../classes/Warehouse";
 import Area from "../classes/Area";
+import { Point } from "mapbox-gl";
+
+interface propsAddNewWarehouses {
+  warehouses: Warehouse[];
+  setWarehouses: Function;
+  option: string;
+  radius: number;
+  name: string;
+  numWarehouses: number;
+  manualCoordinates: number[];
+}
+
+async function addNewWarehouses(props: propsAddNewWarehouses) {
+  const { warehouses, setWarehouses, option, radius, name, numWarehouses, manualCoordinates } = props;
+  console.log(warehouses);
+  console.log(setWarehouses);
+  console.log(numWarehouses);
+  if (option === "automatic") {
+    const newWarehouses: Warehouse[] = [];
+    for (let i = 0; i < numWarehouses; i++) {
+      newWarehouses.push(new Warehouse(warehouses.length + 1 + i, true, radius));
+    }
+    await setWarehouses([...warehouses, ...newWarehouses]);
+  }
+  if (option === "manual") {
+    const newWarehouse = new Warehouse(
+      warehouses.length + 1,
+      false,
+      radius,
+      new Point(manualCoordinates[0], manualCoordinates[1]),
+      name
+    );
+    await setWarehouses([...warehouses, newWarehouse]);
+  }
+}
 
 interface propsAddWarehouse {
-  areas: Area[];
-  setAreas: Function;
   warehouses: Warehouse[];
   setWarehouses: Function;
   minRadius: number;
 }
 
 function AddWarehouse(props: propsAddWarehouse) {
-  const { areas, setAreas, warehouses, setWarehouses, minRadius = 0 } = props;
+  const { warehouses, setWarehouses, minRadius = 0 } = props;
   const navigate = useNavigate();
-  const [option, setOption] = useState<string | undefined>(undefined);
+  const [option, setOption] = useState<string>("");
   const [radius, setRadius] = useState<number>(undefined);
   const [numWarehouses, setNumWarehouses] = useState<number>(0);
+  const [manualCoordinates, setManualCoordinates] = useState<number[]>([0, 0]);
+  const [name, setName] = useState<string>("");
   return (
     <Row className="valueConfigBox">
       <Col>
@@ -41,19 +76,30 @@ function AddWarehouse(props: propsAddWarehouse) {
               />
             </Col>
             <Col className="colLabel">
+              <Form.Label className="labelSecondary">Nom:</Form.Label>
+              <Form.Control
+                className="inputSecondary"
+                disabled={option !== "manual"}
+                value={name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value)}
+              />
               <Form.Label className="labelSecondary">Latitud:</Form.Label>
               <Form.Control
                 className="inputSecondary"
                 disabled={option !== "manual"}
                 value={radius}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRadius(Number(e.currentTarget.value))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setManualCoordinates([Number(e.currentTarget.value), manualCoordinates[1]])
+                }
               />
               <Form.Label className="labelSecondary">Longitud:</Form.Label>
               <Form.Control
                 className="inputSecondary"
                 disabled={option !== "manual"}
                 value={radius}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRadius(Number(e.currentTarget.value))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setManualCoordinates([manualCoordinates[0], Number(e.currentTarget.value)])
+                }
               />
             </Col>
           </Row>
@@ -72,6 +118,7 @@ function AddWarehouse(props: propsAddWarehouse) {
             <Col className="colLabel">
               <Form.Label className="labelSecondary">Nombre de magatzems:</Form.Label>
               <Form.Control
+                type="number"
                 className="inputSecondary"
                 disabled={option !== "automatic"}
                 value={numWarehouses}
@@ -105,11 +152,19 @@ function AddWarehouse(props: propsAddWarehouse) {
             </Col>
             <Col>
               <Button
-                disabled={radius < minRadius}
+                disabled={radius < minRadius || (option !== "manual" && option !== "automatic")}
                 variant="primary"
                 className="button"
-                onClick={() => {
-                  setWarehouses(numWarehouses);
+                onClick={async () => {
+                  await addNewWarehouses({
+                    warehouses,
+                    setWarehouses,
+                    option,
+                    radius,
+                    name,
+                    numWarehouses,
+                    manualCoordinates,
+                  });
                   navigate("/densityMap");
                 }}
               >

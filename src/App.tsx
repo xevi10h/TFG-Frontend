@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Home from "./pages/Home";
 import ValueConfiguration from "./pages/ValueConfiguration";
 import DensityMap from "./pages/DensityMap";
-import Expedition from "./classes/Expedition";
 import Area from "./classes/Area";
 import AddWarehouse from "./pages/AddWarehouse";
 import Warehouse from "./classes/Warehouse";
@@ -15,7 +14,6 @@ function App() {
   const [dateRange, setDateRange] = useState<string[]>([today, today]);
   const [volumeRange, setVolumeRange] = useState<Array<number | undefined>>([0, undefined]);
   const [weightRange, setWeightRange] = useState<Array<number | undefined>>([0, undefined]);
-  const [areas, setAreas] = useState<Area[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
   return (
@@ -43,6 +41,8 @@ function App() {
           path="/densityMap"
           element={
             <DensityMap
+              setWarehouses={setWarehouses}
+              warehouses={warehouses}
               configValue={configValue}
               dateRange={dateRange}
               volumeRange={volumeRange}
@@ -52,9 +52,7 @@ function App() {
         />
         <Route
           path="/addWarehouse"
-          element={
-            <AddWarehouse areas={areas} setAreas={setAreas} warehouses={warehouses} setWarehouses={setWarehouses} />
-          }
+          element={<AddWarehouse minRadius={0} setWarehouses={setWarehouses} warehouses={warehouses} />}
         />
       </Routes>
     </BrowserRouter>

@@ -3,3 +3,16 @@
     height: 60vh;
     margin-bottom: 3%;
 }
+
+.marker {
+    display: block;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 0;
+    width: 10px;      
+    height: 10px;
+    background-size: 100%;
+    background-color: aqua;
+    opacity: 20%;
+}

@@ -41,10 +41,10 @@
 }
 
 .labelSecondary {
-    font-size: large;
+    font-size: medium;
     align-items: center;
     margin-right: 2%;
-    margin-left: 8%;
+    margin-left: 5%;
 }
 
 
@@ -58,8 +58,8 @@
 }
 
 .inputSecondary{
-    font-size: medium;
-    width: 100px;
+    font-size: small;
+    width: 80px;
     height: fit-content;
     align-items: center;
     margin-bottom: 10px;

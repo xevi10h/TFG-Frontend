@@ -1,15 +1,10 @@
 import { useLayoutEffect, useRef } from "react";
-import mapboxgl, { Point } from "mapbox-gl";
+import mapboxgl from "mapbox-gl";
 import { Map } from "mapbox-gl"; // or "const mapboxgl = require('mapbox-gl');"
 import "./MapView.css";
 import Expedition from "../classes/Expedition";
 import Area from "../classes/Area";
 import Warehouse from "../classes/Warehouse";
-
-const longMinBarcelona = 41.31704;
-const longMaxBarcelona = 41.46791;
-const latMinBarcelona = 2.0525;
-const latMaxBarcelona = 2.22836;
 
 mapboxgl.accessToken = "pk.eyJ1IjoieGV2aWh1aXgiLCJhIjoiY2wybjRoaHEwMTZqaDNsbDFkcTdkbG44MCJ9.c67r0WHYc33TDWh9HfmDvQ";
 
@@ -38,13 +33,7 @@ export default function MapView(props: propsMapView) {
       map.on("load", () => {
         expeditionsToWatch.forEach((e: Expedition) => {
           const el = document.createElement("div");
-          // const width = 100;
-          // const height = 100;
           el.className = "marker";
-          // el.style.width = `${width}px`;
-          // el.style.height = `${height}px`;
-          // el.style.backgroundSize = '100%';
-          // el.style.color = 'red'
           new mapboxgl.Marker(el).setLngLat([e.coordinates.x, e.coordinates.y]).addTo(map);
         });
       });
@@ -52,8 +41,8 @@ export default function MapView(props: propsMapView) {
 
     //Warehouse marker
     if (Array.isArray(warehouses) && warehouses.length > 0) {
-      warehouses.forEach((warehouse: Warehouse) => {
-        new mapboxgl.Marker().setLngLat([warehouse.coordinates.x, warehouse.coordinates.y]).addTo(map);
+      warehouses.forEach((w: Warehouse) => {
+        new mapboxgl.Marker().setLngLat([w.coordinates.x, w.coordinates.y]).addTo(map);
       });
     }
 

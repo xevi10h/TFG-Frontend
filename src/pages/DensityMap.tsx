@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import Area from "../classes/Area";
 import Warehouse from "../classes/Warehouse";
 import { useEffect, useState } from "react";
+import { Point } from "mapbox-gl";
 interface propsDensityMap {
   warehouses?: Warehouse[];
+  setWarehouses: Function;
   configValue: string | undefined;
   dateRange: string[];
   volumeRange: Array<number | undefined>;
@@ -14,7 +16,7 @@ interface propsDensityMap {
 }
 
 function DensityMap(props: propsDensityMap) {
-  const { warehouses, configValue, dateRange, volumeRange, weightRange } = props;
+  const { warehouses, setWarehouses, configValue, dateRange, volumeRange, weightRange } = props;
   const navigate = useNavigate();
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -23,25 +25,39 @@ function DensityMap(props: propsDensityMap) {
   }, []);
 
   const fetchAreas = async (): Promise<void> => {
-    let url = `http://localhost:8080/areas?configValue=${configValue}&dateRange=${dateRange[0]},${dateRange[1]}`;
-    if (weightRange.length > 0) {
-      url = `${url}&weightRange=${weightRange[0]},${weightRange[1]}`;
-    }
-    if (volumeRange.length > 0) {
-      url = `${url}&volumeRange=${volumeRange[0]},${volumeRange[1]}`;
-    }
+    let url = `http://localhost:8080/areas`;
     const response = await fetch(url, {
-      method: "GET",
+      method: "POST",
       headers: {
-        Accept: "application/json",
+        "Content-type": "application/json",
       },
+      body: JSON.stringify({
+        configValue,
+        dateRange: `${dateRange[0]},${dateRange[1]}`,
+        weightRange: `${weightRange[0]},${weightRange[1]}`,
+        volumeRange: `${volumeRange[0]},${volumeRange[1]}`,
+        warehouses: warehouses.map((w) => w.serialize),
+      }),
     });
-    const rawAreas = await response.json();
+    const { areas: rawAreas, warehouses: rawWarehouses } = await response.json();
     const areas: Area[] = [];
-    rawAreas.forEach((area: any) => {
+    rawAreas.forEach((area: rawArea) => {
       areas.push(new Area(area.id, area.coordinates, area.value));
     });
+    const warehousesLocated: Warehouse[] = [];
+    rawWarehouses.forEach((warehouse: rawWarehouse) => {
+      warehousesLocated.push(
+        new Warehouse(
+          warehouse.id,
+          warehouse.isAutomatic,
+          warehouse.radius,
+          new Point(warehouse.coordinates[0], warehouse.coordinates[1]),
+          warehouse.name
+        )
+      );
+    });
     setAreas(areas);
+    setWarehouses(warehousesLocated);
     setIsLoading(false);
   };
 

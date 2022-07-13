@@ -1,18 +1,26 @@
 import { Point } from "mapbox-gl";
 
 export default class Warehouse {
-  private readonly _id: string;
-  private readonly _coordinates: Point;
+  private readonly _id: number;
+  private readonly _isAutomatic: boolean;
   private readonly _radius: number;
+  private readonly _coordinates?: Point;
+  private readonly _name?: string;
 
-  constructor(id: string, coordinates: Point, radius: number) {
+  constructor(id: number, isAutomatic: boolean, radius: number, coordinates?: Point, name?: string) {
     this._id = id;
+    this._isAutomatic = isAutomatic;
     this._coordinates = coordinates;
     this._radius = radius;
+    this._name = name;
   }
 
-  public get id(): string {
+  public get id(): number {
     return this._id;
+  }
+
+  public get isAutomatic(): boolean {
+    return this._isAutomatic;
   }
 
   public get coordinates(): Point {
@@ -23,11 +31,17 @@ export default class Warehouse {
     return this._radius;
   }
 
-  public get serializeMapBox(): any {
+  public get name(): string {
+    return this._name;
+  }
+
+  public get serialize(): any {
     return {
       id: this.id,
-      coordinates: this.coordinates,
+      isAutomatic: this.isAutomatic,
       radius: this.radius,
+      coordinates: this.coordinates,
+      name: this.name,
     };
   }
 }
