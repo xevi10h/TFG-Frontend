@@ -50,7 +50,7 @@ function AddWarehouse(props: propsAddWarehouse) {
   const { warehouses, setWarehouses, minRadius = 0 } = props;
   const navigate = useNavigate();
   const [option, setOption] = useState<string>("");
-  const [radius, setRadius] = useState<number>(undefined);
+  const [radius, setRadius] = useState<number | undefined>(undefined);
   const [numWarehouses, setNumWarehouses] = useState<number>(0);
   const [manualCoordinates, setManualCoordinates] = useState<number[]>([0, 0]);
   const [name, setName] = useState<string>("");
@@ -85,18 +85,20 @@ function AddWarehouse(props: propsAddWarehouse) {
               />
               <Form.Label className="labelSecondary">Latitud:</Form.Label>
               <Form.Control
+                type="number"
                 className="inputSecondary"
                 disabled={option !== "manual"}
-                value={radius}
+                value={manualCoordinates[0]}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setManualCoordinates([Number(e.currentTarget.value), manualCoordinates[1]])
                 }
               />
               <Form.Label className="labelSecondary">Longitud:</Form.Label>
               <Form.Control
+                type="number"
                 className="inputSecondary"
                 disabled={option !== "manual"}
-                value={radius}
+                value={manualCoordinates[1]}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setManualCoordinates([manualCoordinates[0], Number(e.currentTarget.value)])
                 }
@@ -130,12 +132,13 @@ function AddWarehouse(props: propsAddWarehouse) {
             <Col className="colLabel">
               <Form.Label className="label">Radi d'actuació:</Form.Label>
               <Form.Control
+                type="number"
                 className="input"
                 placeholder={`Mínim: ${minRadius}`}
                 value={radius}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRadius(Number(e.currentTarget.value))}
               />
-              <Form.Label className="label">metres</Form.Label>
+              <Form.Label className="label">kms</Form.Label>
             </Col>
           </Row>
           <Row>
@@ -152,7 +155,7 @@ function AddWarehouse(props: propsAddWarehouse) {
             </Col>
             <Col>
               <Button
-                disabled={radius < minRadius || (option !== "manual" && option !== "automatic")}
+                disabled={!radius || radius < minRadius || (option !== "manual" && option !== "automatic")}
                 variant="primary"
                 className="button"
                 onClick={async () => {
@@ -160,7 +163,7 @@ function AddWarehouse(props: propsAddWarehouse) {
                     warehouses,
                     setWarehouses,
                     option,
-                    radius,
+                    radius: radius || 0,
                     name,
                     numWarehouses,
                     manualCoordinates,

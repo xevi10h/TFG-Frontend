@@ -42,7 +42,9 @@ export default function MapView(props: propsMapView) {
     //Warehouse marker
     if (Array.isArray(warehouses) && warehouses.length > 0) {
       warehouses.forEach((w: Warehouse) => {
-        new mapboxgl.Marker().setLngLat([w.coordinates.x, w.coordinates.y]).addTo(map);
+        new mapboxgl.Marker({ color: w.isAutomatic ? "#ff6961" : "#84b6f4" })
+          .setLngLat([w.coordinates.x, w.coordinates.y])
+          .addTo(map);
       });
     }
 

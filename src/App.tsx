@@ -15,6 +15,7 @@ function App() {
   const [volumeRange, setVolumeRange] = useState<Array<number | undefined>>([0, undefined]);
   const [weightRange, setWeightRange] = useState<Array<number | undefined>>([0, undefined]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [minRadius, setMinRadius] = useState<number>(0);
 
   return (
     <BrowserRouter>
@@ -47,12 +48,13 @@ function App() {
               dateRange={dateRange}
               volumeRange={volumeRange}
               weightRange={weightRange}
+              setMinRadius={setMinRadius}
             />
           }
         />
         <Route
           path="/addWarehouse"
-          element={<AddWarehouse minRadius={0} setWarehouses={setWarehouses} warehouses={warehouses} />}
+          element={<AddWarehouse minRadius={minRadius} setWarehouses={setWarehouses} warehouses={warehouses} />}
         />
       </Routes>
     </BrowserRouter>
