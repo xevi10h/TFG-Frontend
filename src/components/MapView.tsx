@@ -12,11 +12,13 @@ interface propsMapView {
   warehouses?: Warehouse[];
   expeditions?: Expedition[];
   areas?: Area[];
+  colorScale?: string;
 }
 
 export default function MapView(props: propsMapView) {
   const mapDiv = useRef<HTMLDivElement>(null);
   const { expeditions, warehouses, areas } = props;
+  let { colorScale } = props;
 
   useLayoutEffect(() => {
     const map = new Map({
@@ -50,16 +52,32 @@ export default function MapView(props: propsMapView) {
 
     //Areas marker
     if (Array.isArray(areas) && areas.length > 0) {
-      console.log(areas);
-      const { minValue, maxValue } = areas.reduce(
+      const minDivisor = areas.reduce((prev: number, curr: Area) => {
+        let minDivisor = 1;
+        while (Math.exp(curr.value / minDivisor) > Number.MAX_SAFE_INTEGER) {
+          minDivisor++;
+        }
+        if (minDivisor > prev) return minDivisor;
+        return prev;
+      }, 0);
+      areas.forEach((area) => {
+        area.colorValue = area.value;
+        if (colorScale === "exponential") {
+          area.colorValue = Math.exp(area.value / minDivisor);
+        }
+        if (colorScale === "logarithmic") {
+          area.colorValue = Math.log(area.value);
+        }
+      });
+      const { minColorValue, maxColorValue } = areas.reduce(
         (prev, curr) => {
-          if (curr.value < prev.minValue) prev.minValue = curr.value;
-          if (curr.value > prev.maxValue) prev.maxValue = curr.value;
+          if (curr.colorValue < prev.minColorValue) prev.minColorValue = curr.colorValue;
+          if (curr.colorValue > prev.maxColorValue) prev.maxColorValue = curr.colorValue;
           return prev;
         },
         {
-          minValue: areas[0].value,
-          maxValue: areas[0].value,
+          minColorValue: areas[0].colorValue,
+          maxColorValue: areas[0].colorValue,
         }
       );
       map.on("load", () => {
@@ -73,14 +91,22 @@ export default function MapView(props: propsMapView) {
             source: area.id.toString(), // reference the data source
             layout: {},
             paint: {
-              "fill-color": ["interpolate", ["linear"], area.value, minValue, "#84b6f4", maxValue, "#ff6961"],
+              "fill-color": [
+                "interpolate",
+                ["linear"],
+                area.colorValue,
+                minColorValue,
+                "#84b6f4",
+                maxColorValue,
+                "#ff6961",
+              ],
               "fill-opacity": 0.8,
             },
           });
         });
       });
     }
-  }, [expeditions, warehouses, areas]);
+  }, [expeditions, warehouses, areas, colorScale]);
 
   return <div ref={mapDiv} className="map" />;
 }

@@ -6,13 +6,15 @@ export default class Warehouse {
   private readonly _radius: number;
   private readonly _coordinates?: Point;
   private readonly _name?: string;
+  private readonly _strategy?: string;
 
-  constructor(id: number, isAutomatic: boolean, radius: number, coordinates?: Point, name?: string) {
+  constructor(id: number, isAutomatic: boolean, radius: number, coordinates?: Point, name?: string, strategy?: string) {
     this._id = id;
     this._isAutomatic = isAutomatic;
     this._coordinates = coordinates;
     this._radius = radius;
     this._name = name;
+    this._strategy = strategy;
   }
 
   public get id(): number {
@@ -35,6 +37,10 @@ export default class Warehouse {
     return this._name;
   }
 
+  public get strategy(): string {
+    return this._strategy;
+  }
+
   public get serialize(): any {
     return {
       id: this.id,
@@ -42,6 +48,7 @@ export default class Warehouse {
       radius: this.radius,
       coordinates: this.coordinates,
       name: this.name,
+      strategy: this.strategy,
     };
   }
 }

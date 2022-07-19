@@ -13,7 +13,7 @@ export default function RangeFilter(props: propsRangeFilter) {
   return (
     <div>
       <Row>
-        <FormLabel className="label">{id === "volume" ? "Volum (en kg)" : "Pes (en cm3)"}</FormLabel>
+        <FormLabel className="label">{id === "volume" ? "Volum (en cm3)" : "Pes (en kg)"}</FormLabel>
       </Row>
       <Row>
         <Col>

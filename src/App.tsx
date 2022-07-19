@@ -16,7 +16,6 @@ function App() {
   const [weightRange, setWeightRange] = useState<Array<number | undefined>>([0, undefined]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [minRadius, setMinRadius] = useState<number>(0);
-
   return (
     <BrowserRouter>
       <Routes>

@@ -1,6 +1,6 @@
 import MapView from "../components/MapView";
 import "./DensityMap.css";
-import { Row, Col, Button, Spinner } from "react-bootstrap";
+import { Row, Col, Button, Spinner, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Area from "../classes/Area";
 import Warehouse from "../classes/Warehouse";
@@ -23,6 +23,7 @@ function DensityMap(props: propsDensityMap) {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [colorScale, setColorScale] = useState<string>("linear");
   useEffect(() => {
     fetchAreas();
   }, []);
@@ -42,7 +43,7 @@ function DensityMap(props: propsDensityMap) {
         warehouses: Array.isArray(warehouses) ? warehouses.map((w) => w.serialize) : undefined,
       }),
     });
-    const { areas: rawAreas, warehouses: rawWarehouses, minRadius } = await response.json();
+    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint } = await response.json();
     const areas: Area[] = [];
     rawAreas.forEach((area: rawArea) => {
       areas.push(new Area(area.id, area.coordinates, area.value));
@@ -50,12 +51,23 @@ function DensityMap(props: propsDensityMap) {
     const warehousesLocated: Warehouse[] = [];
     rawWarehouses.forEach((warehouse: rawWarehouse) => {
       warehousesLocated.push(
-        new Warehouse(warehouse.id, warehouse.isAutomatic, warehouse.radius, warehouse.coordinates, warehouse.name)
+        new Warehouse(
+          warehouse.id,
+          warehouse.isAutomatic,
+          warehouse.radius,
+          warehouse.coordinates,
+          warehouse.name,
+          warehouse.strategy
+        )
       );
     });
     setAreas(areas);
     setWarehouses(warehousesLocated);
     setMinRadius(minRadius);
+    if (maxNewPoint !== Number(localStorage.getItem("maxCurrPoint"))) {
+      localStorage.setItem("maxPrevPoint", localStorage.getItem("maxCurrPoint"));
+      localStorage.setItem("maxCurrPoint", maxNewPoint.toString());
+    }
     setIsLoading(false);
   };
 
@@ -71,7 +83,7 @@ function DensityMap(props: propsDensityMap) {
         <Row className="mainBox">
           <Row>
             <Col>
-              <MapView areas={areas} warehouses={warehouses} />
+              <MapView areas={areas} warehouses={warehouses} colorScale={colorScale} />
             </Col>
           </Row>
           <Row className="rowFilters">
@@ -86,9 +98,57 @@ function DensityMap(props: propsDensityMap) {
               </Button>
             </Col>
             <Col className="colButtons">
+              {localStorage.getItem("maxPrevPoint") && Number(localStorage.getItem("maxPrevPoint")) > 0 ? (
+                <Form.Label className="labelSecondary">{`Alçada màxima anterior: ${localStorage.getItem(
+                  "maxPrevPoint"
+                )}`}</Form.Label>
+              ) : null}
+              <Form.Label className="labelSecondary">{`Alçada màxima actual: ${localStorage.getItem(
+                "maxCurrPoint"
+              )}`}</Form.Label>
+            </Col>
+            <Col className="colButtons">
               <Button onClick={() => navigate("/addWarehouse")} size="lg" disabled={!configValue}>
                 + Afegir magatzem
               </Button>
+            </Col>
+          </Row>
+          <Row className="rowFilters">
+            <Col>
+              <Form.Label>Escala de colors</Form.Label>
+            </Col>
+            <Col>
+              <Form.Check
+                className="check"
+                type="radio"
+                id="linear"
+                label="Lineal"
+                value="linear"
+                checked={colorScale === "linear"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setColorScale(e.target.value)}
+              />
+            </Col>
+            <Col>
+              <Form.Check
+                className="check"
+                type="radio"
+                id="exponential"
+                label="Exponencial (e^x)"
+                value="exponential"
+                checked={colorScale === "exponential"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setColorScale(e.target.value)}
+              />
+            </Col>
+            <Col>
+              <Form.Check
+                className="check"
+                type="radio"
+                id="logarithmic"
+                label="Logarítmica (lnX)"
+                value="logarithmic"
+                checked={colorScale === "logarithmic"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setColorScale(e.target.value)}
+              />
             </Col>
           </Row>
         </Row>

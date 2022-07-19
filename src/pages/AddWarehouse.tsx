@@ -14,17 +14,15 @@ interface propsAddNewWarehouses {
   name: string;
   numWarehouses: number;
   manualCoordinates: number[];
+  strategy: string;
 }
 
 async function addNewWarehouses(props: propsAddNewWarehouses) {
-  const { warehouses, setWarehouses, option, radius, name, numWarehouses, manualCoordinates } = props;
-  console.log(warehouses);
-  console.log(setWarehouses);
-  console.log(numWarehouses);
+  const { warehouses, setWarehouses, option, radius, name, numWarehouses, manualCoordinates, strategy } = props;
   if (option === "automatic") {
     const newWarehouses: Warehouse[] = [];
     for (let i = 0; i < numWarehouses; i++) {
-      newWarehouses.push(new Warehouse(warehouses.length + 1 + i, true, radius));
+      newWarehouses.push(new Warehouse(warehouses.length + 1 + i, true, radius, undefined, undefined, strategy));
     }
     await setWarehouses([...warehouses, ...newWarehouses]);
   }
@@ -49,11 +47,12 @@ interface propsAddWarehouse {
 function AddWarehouse(props: propsAddWarehouse) {
   const { warehouses, setWarehouses, minRadius = 0 } = props;
   const navigate = useNavigate();
-  const [option, setOption] = useState<string>("");
+  const [option, setOption] = useState<string | undefined>(undefined);
   const [radius, setRadius] = useState<number | undefined>(undefined);
   const [numWarehouses, setNumWarehouses] = useState<number>(0);
   const [manualCoordinates, setManualCoordinates] = useState<number[]>([0, 0]);
   const [name, setName] = useState<string>("");
+  const [strategy, setStrategy] = useState<string | undefined>(undefined);
   return (
     <Row className="valueConfigBox">
       <Col>
@@ -128,6 +127,39 @@ function AddWarehouse(props: propsAddWarehouse) {
               />
             </Col>
           </Row>
+          <Row className="rowWarehouseSecondary">
+            <Col>
+              <Form.Label className="labelSecondary">Possibles estratègies:</Form.Label>
+            </Col>
+          </Row>
+          <Row className="rowWarehouseSecondary">
+            <Col>
+              <Form.Check
+                disabled={option !== "automatic"}
+                className="labelSecondary"
+                type="radio"
+                id="integral"
+                label="Absorbir els màxims paquets"
+                value="integral"
+                checked={strategy === "integral"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
+              />
+            </Col>
+          </Row>
+          <Row className="rowWarehouseSecondary">
+            <Col>
+              <Form.Check
+                disabled={option !== "automatic"}
+                className="labelSecondary"
+                type="radio"
+                id="maxArea"
+                label="Ubicar en el punt amb més densitats de paquets"
+                value="maxArea"
+                checked={strategy === "maxArea"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
+              />
+            </Col>
+          </Row>
           <Row className="rowWarehouse">
             <Col className="colLabel">
               <Form.Label className="label">Radi d'actuació:</Form.Label>
@@ -155,7 +187,12 @@ function AddWarehouse(props: propsAddWarehouse) {
             </Col>
             <Col>
               <Button
-                disabled={!radius || radius < minRadius || (option !== "manual" && option !== "automatic")}
+                disabled={
+                  !radius ||
+                  radius < minRadius ||
+                  option === undefined ||
+                  (option === "automatic" && strategy === undefined)
+                }
                 variant="primary"
                 className="button"
                 onClick={async () => {
@@ -167,6 +204,7 @@ function AddWarehouse(props: propsAddWarehouse) {
                     name,
                     numWarehouses,
                     manualCoordinates,
+                    strategy,
                   });
                   navigate("/densityMap");
                 }}

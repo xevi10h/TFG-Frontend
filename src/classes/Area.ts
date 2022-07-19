@@ -4,11 +4,13 @@ export default class Area {
   private readonly _id: number;
   private readonly _coordinates: Array<Array<number>>;
   private _value: number;
+  private _colorValue: number;
 
-  constructor(id: number, coordinates: Array<Array<number>>, value: number = 0) {
+  constructor(id: number, coordinates: Array<Array<number>>, value: number = 0, colorValue?: number) {
     this._id = id;
     this._coordinates = coordinates;
     this._value = value;
+    this._colorValue = colorValue;
   }
 
   public set value(value: number) {
@@ -17,6 +19,14 @@ export default class Area {
 
   public get value(): number {
     return this._value;
+  }
+
+  public set colorValue(colorValue: number) {
+    this._colorValue = colorValue;
+  }
+
+  public get colorValue(): number {
+    return this._colorValue;
   }
 
   public get coordinates(): Array<Array<number>> {

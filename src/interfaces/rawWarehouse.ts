@@ -6,4 +6,5 @@ export interface rawWarehouse {
   radius: number;
   coordinates: Point;
   name?: string;
+  strategy?: string;
 }
