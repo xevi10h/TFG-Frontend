@@ -23,7 +23,7 @@ export default function MapView(props: propsMapView) {
   useLayoutEffect(() => {
     const map = new Map({
       container: mapDiv.current!, // container ID
-      style: "mapbox://styles/mapbox/streets-v11", // style URL
+      style: "mapbox://styles/mapbox/streets-v11?optimize=true", // style URL
       center: [2.16992, 41.3879], // starting position [lng, lat]
       zoom: 10, // starting zoom
     });

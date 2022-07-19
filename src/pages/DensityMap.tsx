@@ -43,7 +43,7 @@ function DensityMap(props: propsDensityMap) {
         warehouses: Array.isArray(warehouses) ? warehouses.map((w) => w.serialize) : undefined,
       }),
     });
-    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint } = await response.json();
+    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint, totalLoad } = await response.json();
     const areas: Area[] = [];
     rawAreas.forEach((area: rawArea) => {
       areas.push(new Area(area.id, area.coordinates, area.value));
@@ -67,6 +67,10 @@ function DensityMap(props: propsDensityMap) {
     if (maxNewPoint !== Number(localStorage.getItem("maxCurrPoint"))) {
       localStorage.setItem("maxPrevPoint", localStorage.getItem("maxCurrPoint"));
       localStorage.setItem("maxCurrPoint", maxNewPoint.toString());
+    }
+    if (totalLoad !== Number(localStorage.getItem("totalCurrLoad"))) {
+      localStorage.setItem("totalPrevLoad", localStorage.getItem("totalCurrLoad"));
+      localStorage.setItem("totalCurrLoad", totalLoad.toString());
     }
     setIsLoading(false);
   };
@@ -98,14 +102,46 @@ function DensityMap(props: propsDensityMap) {
               </Button>
             </Col>
             <Col className="colButtons">
-              {localStorage.getItem("maxPrevPoint") && Number(localStorage.getItem("maxPrevPoint")) > 0 ? (
-                <Form.Label className="labelSecondary">{`Alçada màxima anterior: ${localStorage.getItem(
-                  "maxPrevPoint"
-                )}`}</Form.Label>
+              {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
+                <Form.Label className="labelSecondary">{`Alçada màxima anterior: ${
+                  Number(localStorage.getItem("maxPrevPoint")) >= 10000
+                    ? Number(localStorage.getItem("maxPrevPoint")).toExponential(2)
+                    : localStorage.getItem("maxPrevPoint")
+                }`}</Form.Label>
               ) : null}
-              <Form.Label className="labelSecondary">{`Alçada màxima actual: ${localStorage.getItem(
-                "maxCurrPoint"
-              )}`}</Form.Label>
+              <Form.Label className="labelSecondary">{`Alçada màxima actual: ${
+                Number(localStorage.getItem("maxCurrPoint")) >= 10000
+                  ? Number(localStorage.getItem("maxCurrPoint")).toExponential(2)
+                  : localStorage.getItem("maxCurrPoint")
+              }`}</Form.Label>
+              {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
+                <Form.Label className="labelSecondary">{`Disminució d'alçada màxima: ${(
+                  ((Number(localStorage.getItem("maxPrevPoint")) - Number(localStorage.getItem("maxCurrPoint"))) /
+                    Number(localStorage.getItem("maxPrevPoint"))) *
+                  100
+                ).toFixed(2)} %`}</Form.Label>
+              ) : null}
+            </Col>
+            <Col className="colButtons">
+              {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
+                <Form.Label className="labelSecondary">{`Càrrega anterior: ${
+                  Number(localStorage.getItem("totalPrevLoad")) >= 10000
+                    ? Number(localStorage.getItem("totalPrevLoad")).toExponential(2)
+                    : localStorage.getItem("totalPrevLoad")
+                }`}</Form.Label>
+              ) : null}
+              <Form.Label className="labelSecondary">{`Càrrega actual: ${
+                Number(localStorage.getItem("totalCurrLoad")) >= 10000
+                  ? Number(localStorage.getItem("totalCurrLoad")).toExponential(2)
+                  : localStorage.getItem("totalCurrLoad")
+              }`}</Form.Label>
+              {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
+                <Form.Label className="labelSecondary">{`Disminució de càrrega: ${(
+                  ((Number(localStorage.getItem("totalPrevLoad")) - Number(localStorage.getItem("totalCurrLoad"))) /
+                    Number(localStorage.getItem("totalPrevLoad"))) *
+                  100
+                ).toFixed(2)} %`}</Form.Label>
+              ) : null}
             </Col>
             <Col className="colButtons">
               <Button onClick={() => navigate("/addWarehouse")} size="lg" disabled={!configValue}>

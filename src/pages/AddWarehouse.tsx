@@ -139,7 +139,7 @@ function AddWarehouse(props: propsAddWarehouse) {
                 className="labelSecondary"
                 type="radio"
                 id="integral"
-                label="Absorbir els màxims paquets"
+                label="Absorbir màxima càrrega"
                 value="integral"
                 checked={strategy === "integral"}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
