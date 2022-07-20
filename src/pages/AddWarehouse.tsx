@@ -25,7 +25,6 @@ async function addNewWarehouses(props: propsAddNewWarehouses) {
     for (let i = 0; i < numWarehouses; i++) {
       newWarehouses.push(new Warehouse(lastWarehouseId + 1 + i, true, radius, undefined, undefined, strategy));
     }
-    console.log(warehouses);
     await setWarehousesRequest([...warehouses, ...newWarehouses]);
   }
   if (option === "manual") {
