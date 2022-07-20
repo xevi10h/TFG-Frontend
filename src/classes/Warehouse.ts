@@ -7,14 +7,30 @@ export default class Warehouse {
   private readonly _coordinates?: Point;
   private readonly _name?: string;
   private readonly _strategy?: string;
+  private readonly _absorbedLoad?: number;
+  private _isFixed?: boolean;
+  private _checkbox?: boolean;
 
-  constructor(id: number, isAutomatic: boolean, radius: number, coordinates?: Point, name?: string, strategy?: string) {
+  constructor(
+    id: number,
+    isAutomatic: boolean,
+    radius: number,
+    coordinates?: Point,
+    name?: string,
+    strategy?: string,
+    absorbedLoad?: number,
+    isFixed?: boolean,
+    checkbox?: boolean
+  ) {
     this._id = id;
     this._isAutomatic = isAutomatic;
     this._coordinates = coordinates;
     this._radius = radius;
     this._name = name;
     this._strategy = strategy;
+    this._absorbedLoad = absorbedLoad;
+    this._isFixed = isFixed;
+    this._checkbox = checkbox;
   }
 
   public get id(): number {
@@ -41,6 +57,26 @@ export default class Warehouse {
     return this._strategy;
   }
 
+  public get absorbedLoad(): number {
+    return this._absorbedLoad;
+  }
+
+  public get isFixed(): boolean {
+    return this._isFixed;
+  }
+
+  public set isFixed(isFixed: boolean) {
+    this._isFixed = isFixed;
+  }
+
+  public get checkbox(): boolean {
+    return this._checkbox;
+  }
+
+  public set checkbox(checkbox: boolean) {
+    this._checkbox = checkbox;
+  }
+
   public get serialize(): any {
     return {
       id: this.id,
@@ -49,6 +85,8 @@ export default class Warehouse {
       coordinates: this.coordinates,
       name: this.name,
       strategy: this.strategy,
+      absorbedLoad: this.absorbedLoad,
+      isFixed: this.isFixed,
     };
   }
 }

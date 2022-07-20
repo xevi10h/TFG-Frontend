@@ -1,23 +1,28 @@
-import { useLayoutEffect, useRef } from "react";
-import mapboxgl from "mapbox-gl";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createRoot } from "react-dom/client";
+import mapboxgl, { Popup } from "mapbox-gl";
 import { Map } from "mapbox-gl"; // or "const mapboxgl = require('mapbox-gl');"
 import "./MapView.css";
 import Expedition from "../classes/Expedition";
 import Area from "../classes/Area";
 import Warehouse from "../classes/Warehouse";
+import { Button, Row, Col, Form } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 mapboxgl.accessToken = "pk.eyJ1IjoieGV2aWh1aXgiLCJhIjoiY2wybjRoaHEwMTZqaDNsbDFkcTdkbG44MCJ9.c67r0WHYc33TDWh9HfmDvQ";
 
 interface propsMapView {
   warehouses?: Warehouse[];
+  setWarehousesRequest?: Function;
   expeditions?: Expedition[];
   areas?: Area[];
   colorScale?: string;
+  setIsLoading?: Function;
 }
 
 export default function MapView(props: propsMapView) {
   const mapDiv = useRef<HTMLDivElement>(null);
-  const { expeditions, warehouses, areas } = props;
+  const { expeditions, warehouses, setWarehousesRequest, areas } = props;
   let { colorScale } = props;
 
   useLayoutEffect(() => {
@@ -43,10 +48,77 @@ export default function MapView(props: propsMapView) {
 
     //Warehouse marker
     if (Array.isArray(warehouses) && warehouses.length > 0) {
-      warehouses.forEach((w: Warehouse) => {
-        new mapboxgl.Marker({ color: w.isAutomatic ? "#ff6961" : "#84b6f4" })
-          .setLngLat([w.coordinates.x, w.coordinates.y])
-          .addTo(map);
+      map.on("load", () => {
+        warehouses.forEach((w: Warehouse) => {
+          const placeholder = document.createElement("div");
+          const info = new Popup({ closeButton: false }).setDOMContent(placeholder).setMaxWidth("1000px");
+          const popUp = (
+            <div className="popUp">
+              {w.name ? (
+                <Row>
+                  <Col className="fieldsPopUp">Nom:</Col>
+                  <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>{`${w.name}`}</Col>
+                </Row>
+              ) : (
+                ""
+              )}
+              <Row>
+                <Col className="fieldsPopUp">Coordenades: </Col>
+                <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>{`[${w.coordinates.x.toFixed(
+                  4
+                )}, ${w.coordinates.y.toFixed(4)}]`}</Col>
+              </Row>
+              <Row>
+                <Col className="fieldsPopUp">Càrrega absorbida:</Col>
+                <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
+                  {w.absorbedLoad >= 10000000
+                    ? w.absorbedLoad.toExponential(2)
+                    : Number(Number(w.absorbedLoad.toFixed(2))).toLocaleString("en-EN")}
+                </Col>
+              </Row>
+              <Row>
+                <Form.Check
+                  className="checkPopUp"
+                  type="checkbox"
+                  label="No recalcular la ubicació dels magatzems automàtics"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    w.checkbox = e.target.checked;
+                  }}
+                />
+              </Row>
+              <Row>
+                <Col className="popUpButtons">
+                  <Button variant="light" onClick={() => info.remove()}>
+                    Cancel·lar
+                  </Button>
+                </Col>
+                <Col className="popUpButtons">
+                  <Button
+                    variant="dark"
+                    onClick={() => {
+                      setWarehousesRequest(
+                        warehouses.reduce((prev: Warehouse[], curr: Warehouse) => {
+                          if (curr.id !== w.id) {
+                            curr.isFixed = w.checkbox;
+                            prev.push(curr);
+                          }
+                          return prev;
+                        }, [])
+                      );
+                    }}
+                  >
+                    Eliminar
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+          );
+          createRoot(placeholder).render(popUp);
+          new mapboxgl.Marker({ color: w.isAutomatic ? "#ff6961" : "#84b6f4" })
+            .setLngLat([w.coordinates.x, w.coordinates.y])
+            .setPopup(info)
+            .addTo(map);
+        });
       });
     }
 

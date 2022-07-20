@@ -17,21 +17,31 @@
     opacity: 20%;
 }
 
-.pin2 {
-    position: absolute;
-    border-radius: 50%;
-    border: 8px solid #fff;
-    width: 8px;
-    height: 8px;
-  }
-  
-  .pin2::after {
-    position: absolute;
-    content: '';
-    width: 0px;
-    height: 0px;
-    bottom: -30px;
-    left: -6px;
-    border: 10px solid transparent;
-    border-top: 17px solid #fff;
-  }
+.checkPopUp{
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+.fieldsPopUp{
+  font-size: medium;
+  margin-bottom: 5px;
+  margin-left: 5px;
+  margin-top: 5px;
+}
+
+.popUp{
+  width:max-content;
+  align-items: center;
+}
+
+.popUpButtons {
+  width: 100%;
+  display: block;
+  text-align: center;
+  position: relative;
+  margin-top: 5px;
+}
+
+.border{
+  border-radius: 50px;
+}

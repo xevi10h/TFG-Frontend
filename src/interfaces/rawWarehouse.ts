@@ -7,4 +7,6 @@ export interface rawWarehouse {
   coordinates: Point;
   name?: string;
   strategy?: string;
+  absorbedLoad?: number;
+  isFixed?: boolean;
 }

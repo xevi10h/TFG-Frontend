@@ -66,7 +66,6 @@ function Home(props: propsHome) {
       },
     });
     const rawExpeditions = await response.json();
-    console.log(rawExpeditions);
     // rawExpeditions = rawExpeditions.slice(0, 100000)
     const expeditions: Expedition[] = [];
     rawExpeditions.forEach((expedition: rawExpedition) => {

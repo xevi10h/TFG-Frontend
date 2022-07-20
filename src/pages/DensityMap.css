@@ -21,3 +21,12 @@
     width: 100%;
     align-items: center
 }
+
+.keys{
+    font-size: x-small;
+}
+
+.values{
+    font-size: x-small;
+    font-weight: bold;
+}

@@ -8,7 +8,7 @@ import { Point } from "mapbox-gl";
 
 interface propsAddNewWarehouses {
   warehouses: Warehouse[];
-  setWarehouses: Function;
+  setWarehousesRequest: Function;
   option: string;
   radius: number;
   name: string;
@@ -18,34 +18,36 @@ interface propsAddNewWarehouses {
 }
 
 async function addNewWarehouses(props: propsAddNewWarehouses) {
-  const { warehouses, setWarehouses, option, radius, name, numWarehouses, manualCoordinates, strategy } = props;
+  const { warehouses, setWarehousesRequest, option, radius, name, numWarehouses, manualCoordinates, strategy } = props;
+  const lastWarehouseId = warehouses.reduce((prev: number, curr: Warehouse) => (curr.id > prev ? curr.id : prev), 0);
   if (option === "automatic") {
     const newWarehouses: Warehouse[] = [];
     for (let i = 0; i < numWarehouses; i++) {
-      newWarehouses.push(new Warehouse(warehouses.length + 1 + i, true, radius, undefined, undefined, strategy));
+      newWarehouses.push(new Warehouse(lastWarehouseId + 1 + i, true, radius, undefined, undefined, strategy));
     }
-    await setWarehouses([...warehouses, ...newWarehouses]);
+    console.log(warehouses);
+    await setWarehousesRequest([...warehouses, ...newWarehouses]);
   }
   if (option === "manual") {
     const newWarehouse = new Warehouse(
-      warehouses.length + 1,
+      lastWarehouseId + 1,
       false,
       radius,
       new Point(manualCoordinates[0], manualCoordinates[1]),
       name
     );
-    await setWarehouses([...warehouses, newWarehouse]);
+    await setWarehousesRequest([...warehouses, newWarehouse]);
   }
 }
 
 interface propsAddWarehouse {
   warehouses: Warehouse[];
-  setWarehouses: Function;
+  setWarehousesRequest: Function;
   minRadius: number;
 }
 
 function AddWarehouse(props: propsAddWarehouse) {
-  const { warehouses, setWarehouses, minRadius = 0 } = props;
+  const { warehouses, setWarehousesRequest, minRadius = 0 } = props;
   const navigate = useNavigate();
   const [option, setOption] = useState<string | undefined>(undefined);
   const [radius, setRadius] = useState<number | undefined>(undefined);
@@ -191,14 +193,14 @@ function AddWarehouse(props: propsAddWarehouse) {
                   !radius ||
                   radius < minRadius ||
                   option === undefined ||
-                  (option === "automatic" && strategy === undefined)
+                  (option === "automatic" && (strategy === undefined || numWarehouses <= 0))
                 }
                 variant="primary"
                 className="button"
                 onClick={async () => {
                   await addNewWarehouses({
                     warehouses,
-                    setWarehouses,
+                    setWarehousesRequest,
                     option,
                     radius: radius || 0,
                     name,

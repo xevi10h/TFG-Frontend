@@ -10,7 +10,9 @@ import { rawArea } from "../interfaces/rawArea";
 
 interface propsDensityMap {
   warehouses?: Warehouse[];
-  setWarehouses: Function;
+  setWarehouses?: Function;
+  warehousesRequest?: Warehouse[];
+  setWarehousesRequest?: Function;
   configValue: string | undefined;
   dateRange: string[];
   volumeRange: Array<number | undefined>;
@@ -19,14 +21,24 @@ interface propsDensityMap {
 }
 
 function DensityMap(props: propsDensityMap) {
-  const { warehouses, setWarehouses, configValue, dateRange, volumeRange, weightRange, setMinRadius } = props;
+  const {
+    warehouses,
+    setWarehouses,
+    configValue,
+    dateRange,
+    volumeRange,
+    weightRange,
+    setMinRadius,
+    warehousesRequest,
+    setWarehousesRequest,
+  } = props;
   const navigate = useNavigate();
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [colorScale, setColorScale] = useState<string>("linear");
   useEffect(() => {
     fetchAreas();
-  }, []);
+  }, [warehousesRequest]);
 
   const fetchAreas = async (): Promise<void> => {
     let url = `http://localhost:8080/areas`;
@@ -40,7 +52,7 @@ function DensityMap(props: propsDensityMap) {
         dateRange: `${dateRange[0]},${dateRange[1]}`,
         weightRange: `${weightRange[0]},${weightRange[1]}`,
         volumeRange: `${volumeRange[0]},${volumeRange[1]}`,
-        warehouses: Array.isArray(warehouses) ? warehouses.map((w) => w.serialize) : undefined,
+        warehouses: Array.isArray(warehousesRequest) ? warehousesRequest.map((w) => w.serialize) : undefined,
       }),
     });
     const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint, totalLoad } = await response.json();
@@ -49,18 +61,22 @@ function DensityMap(props: propsDensityMap) {
       areas.push(new Area(area.id, area.coordinates, area.value));
     });
     const warehousesLocated: Warehouse[] = [];
-    rawWarehouses.forEach((warehouse: rawWarehouse) => {
-      warehousesLocated.push(
-        new Warehouse(
-          warehouse.id,
-          warehouse.isAutomatic,
-          warehouse.radius,
-          warehouse.coordinates,
-          warehouse.name,
-          warehouse.strategy
-        )
-      );
-    });
+    if (Array.isArray(rawWarehouses) && rawWarehouses.length > 0) {
+      rawWarehouses.forEach((warehouse: rawWarehouse) => {
+        warehousesLocated.push(
+          new Warehouse(
+            warehouse.id,
+            warehouse.isAutomatic,
+            warehouse.radius,
+            warehouse.coordinates,
+            warehouse.name,
+            warehouse.strategy,
+            warehouse.absorbedLoad,
+            warehouse.isFixed
+          )
+        );
+      });
+    }
     setAreas(areas);
     setWarehouses(warehousesLocated);
     setMinRadius(minRadius);
@@ -87,7 +103,13 @@ function DensityMap(props: propsDensityMap) {
         <Row className="mainBox">
           <Row>
             <Col>
-              <MapView areas={areas} warehouses={warehouses} colorScale={colorScale} />
+              <MapView
+                areas={areas}
+                warehouses={warehouses}
+                colorScale={colorScale}
+                setWarehousesRequest={setWarehousesRequest}
+                setIsLoading={setIsLoading}
+              />
             </Col>
           </Row>
           <Row className="rowFilters">
@@ -101,46 +123,70 @@ function DensityMap(props: propsDensityMap) {
                 Enrere
               </Button>
             </Col>
-            <Col className="colButtons">
+            <Col>
               {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
-                <Form.Label className="labelSecondary">{`Alçada màxima anterior: ${
-                  Number(localStorage.getItem("maxPrevPoint")) >= 10000
-                    ? Number(localStorage.getItem("maxPrevPoint")).toExponential(2)
-                    : localStorage.getItem("maxPrevPoint")
-                }`}</Form.Label>
+                <Row>
+                  <Col className="keys">Alçada màxima anterior:</Col>{" "}
+                  <Col className="values">
+                    {Number(localStorage.getItem("maxPrevPoint")) >= 10000000
+                      ? Number(localStorage.getItem("maxPrevPoint")).toExponential(2)
+                      : Number(Number(localStorage.getItem("maxPrevPoint")).toFixed(2)).toLocaleString("en-EN")}
+                  </Col>
+                </Row>
               ) : null}
-              <Form.Label className="labelSecondary">{`Alçada màxima actual: ${
-                Number(localStorage.getItem("maxCurrPoint")) >= 10000
-                  ? Number(localStorage.getItem("maxCurrPoint")).toExponential(2)
-                  : localStorage.getItem("maxCurrPoint")
-              }`}</Form.Label>
+              <Row>
+                <Col className="keys">Alçada màxima actual: </Col>
+                <Col className="values">
+                  {Number(localStorage.getItem("maxCurrPoint")) >= 10000000
+                    ? Number(localStorage.getItem("maxCurrPoint")).toExponential(2)
+                    : Number(Number(localStorage.getItem("maxCurrPoint")).toFixed(2)).toLocaleString("en-EN")}
+                </Col>
+              </Row>
               {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
-                <Form.Label className="labelSecondary">{`Disminució d'alçada màxima: ${(
-                  ((Number(localStorage.getItem("maxPrevPoint")) - Number(localStorage.getItem("maxCurrPoint"))) /
-                    Number(localStorage.getItem("maxPrevPoint"))) *
-                  100
-                ).toFixed(2)} %`}</Form.Label>
+                <Row>
+                  <Col className="keys">Disminució d'alçada màxima:</Col>
+                  <Col className="values">
+                    {(
+                      ((Number(localStorage.getItem("maxPrevPoint")) - Number(localStorage.getItem("maxCurrPoint"))) /
+                        Number(localStorage.getItem("maxPrevPoint"))) *
+                      100
+                    ).toFixed(2)}{" "}
+                    %
+                  </Col>
+                </Row>
               ) : null}
             </Col>
-            <Col className="colButtons">
+            <Col>
               {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
-                <Form.Label className="labelSecondary">{`Càrrega anterior: ${
-                  Number(localStorage.getItem("totalPrevLoad")) >= 10000
-                    ? Number(localStorage.getItem("totalPrevLoad")).toExponential(2)
-                    : localStorage.getItem("totalPrevLoad")
-                }`}</Form.Label>
+                <Row>
+                  <Col className="keys">Càrrega anterior:</Col>
+                  <Col className="values">
+                    {Number(localStorage.getItem("totalPrevLoad")) >= 10000000
+                      ? Number(localStorage.getItem("totalPrevLoad")).toExponential(2)
+                      : Number(Number(localStorage.getItem("totalPrevLoad")).toFixed(2)).toLocaleString("en-EN")}
+                  </Col>
+                </Row>
               ) : null}
-              <Form.Label className="labelSecondary">{`Càrrega actual: ${
-                Number(localStorage.getItem("totalCurrLoad")) >= 10000
-                  ? Number(localStorage.getItem("totalCurrLoad")).toExponential(2)
-                  : localStorage.getItem("totalCurrLoad")
-              }`}</Form.Label>
+              <Row>
+                <Col className="keys">Càrrega actual:</Col>
+                <Col className="values">
+                  {Number(localStorage.getItem("totalCurrLoad")) >= 10000000
+                    ? Number(localStorage.getItem("totalCurrLoad")).toExponential(2)
+                    : Number(Number(localStorage.getItem("totalCurrLoad")).toFixed(2)).toLocaleString("en-EN")}
+                </Col>
+              </Row>
               {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
-                <Form.Label className="labelSecondary">{`Disminució de càrrega: ${(
-                  ((Number(localStorage.getItem("totalPrevLoad")) - Number(localStorage.getItem("totalCurrLoad"))) /
-                    Number(localStorage.getItem("totalPrevLoad"))) *
-                  100
-                ).toFixed(2)} %`}</Form.Label>
+                <Row>
+                  <Col className="keys">Disminució de càrrega:</Col>
+                  <Col className="values">
+                    {(
+                      ((Number(localStorage.getItem("totalPrevLoad")) - Number(localStorage.getItem("totalCurrLoad"))) /
+                        Number(localStorage.getItem("totalPrevLoad"))) *
+                      100
+                    ).toFixed(2)}{" "}
+                    %
+                  </Col>
+                </Row>
               ) : null}
             </Col>
             <Col className="colButtons">
