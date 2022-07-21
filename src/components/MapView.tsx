@@ -50,6 +50,7 @@ export default function MapView(props: propsMapView) {
     if (Array.isArray(warehouses) && warehouses.length > 0) {
       map.on("load", () => {
         warehouses.forEach((w: Warehouse) => {
+          let checkbox: boolean = false;
           const placeholder = document.createElement("div");
           const info = new Popup({ closeButton: false }).setDOMContent(placeholder).setMaxWidth("1000px");
           const popUp = (
@@ -82,7 +83,7 @@ export default function MapView(props: propsMapView) {
                   type="checkbox"
                   label="No recalcular la ubicació dels magatzems automàtics"
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    w.checkbox = e.target.checked;
+                    checkbox = e.target.checked;
                   }}
                 />
               </Row>
@@ -99,7 +100,7 @@ export default function MapView(props: propsMapView) {
                       setWarehousesRequest(
                         warehouses.reduce((prev: Warehouse[], curr: Warehouse) => {
                           if (curr.id !== w.id) {
-                            curr.isFixed = w.checkbox;
+                            curr.isFixed = checkbox;
                             prev.push(curr);
                           }
                           return prev;
