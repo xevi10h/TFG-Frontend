@@ -140,7 +140,7 @@ function AddWarehouse(props: propsAddWarehouse) {
                 className="labelSecondary"
                 type="radio"
                 id="integral"
-                label="Absorbir màxima càrrega"
+                label="Absorbir màxima càrrega (Tipus Asbsorbidor)"
                 value="integral"
                 checked={strategy === "integral"}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
@@ -154,7 +154,7 @@ function AddWarehouse(props: propsAddWarehouse) {
                 className="labelSecondary"
                 type="radio"
                 id="maxArea"
-                label="Ubicar en el punt amb més densitats de paquets"
+                label="Ubicar en el punt amb més densitats de paquets (Tipus Dens)"
                 value="maxArea"
                 checked={strategy === "maxArea"}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}

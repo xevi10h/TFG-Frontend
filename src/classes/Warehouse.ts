@@ -9,7 +9,6 @@ export default class Warehouse {
   private readonly _strategy?: string;
   private readonly _absorbedLoad?: number;
   private _isFixed?: boolean;
-  private _checkbox?: boolean;
 
   constructor(
     id: number,
@@ -19,8 +18,7 @@ export default class Warehouse {
     name?: string,
     strategy?: string,
     absorbedLoad?: number,
-    isFixed?: boolean,
-    checkbox?: boolean
+    isFixed?: boolean
   ) {
     this._id = id;
     this._isAutomatic = isAutomatic;
@@ -30,7 +28,6 @@ export default class Warehouse {
     this._strategy = strategy;
     this._absorbedLoad = absorbedLoad;
     this._isFixed = isFixed;
-    this._checkbox = checkbox;
   }
 
   public get id(): number {
@@ -67,14 +64,6 @@ export default class Warehouse {
 
   public set isFixed(isFixed: boolean) {
     this._isFixed = isFixed;
-  }
-
-  public get checkbox(): boolean {
-    return this._checkbox;
-  }
-
-  public set checkbox(checkbox: boolean) {
-    this._checkbox = checkbox;
   }
 
   public get serialize(): any {

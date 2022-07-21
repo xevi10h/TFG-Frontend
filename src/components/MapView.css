@@ -42,6 +42,23 @@
   margin-top: 5px;
 }
 
-.border{
-  border-radius: 50px;
+.popUpTitle {
+  font-weight: bolder;
+  width: 100%;
+  display: block;
+  text-align: center;
+  position: relative;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  font-size: medium;
+  border-width: 2px;
+  border-bottom-color: white;
+  border-bottom-style: solid;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.mapboxgl-popup-content{
+  border-radius: 30px;
 }

@@ -24,6 +24,7 @@ export default function MapView(props: propsMapView) {
   const mapDiv = useRef<HTMLDivElement>(null);
   const { expeditions, warehouses, setWarehousesRequest, areas } = props;
   let { colorScale } = props;
+  const [colorPopup, setPopupColor] = useState<string>("");
 
   useLayoutEffect(() => {
     const map = new Map({
@@ -52,13 +53,39 @@ export default function MapView(props: propsMapView) {
         warehouses.forEach((w: Warehouse) => {
           let checkbox: boolean = false;
           const placeholder = document.createElement("div");
-          const info = new Popup({ closeButton: false }).setDOMContent(placeholder).setMaxWidth("1000px");
+          const info = new Popup({ closeButton: false, className: "popUpBackground" })
+            .setDOMContent(placeholder)
+            .setMaxWidth("1000px");
+
           const popUp = (
             <div className="popUp">
+              <Row>
+                <Col
+                  className="popUpTitle"
+                  style={{
+                    color: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
+                    borderBottomColor: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
+                  }}
+                >
+                  MAGATZEM {w.isAutomatic ? "AUTOMÀTIC" : "MANUAL"}
+                </Col>
+              </Row>
+              {w.strategy ? (
+                <Row>
+                  <Col className="fieldsPopUp">Tipus:</Col>
+                  <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
+                    {w.strategy === "integral" ? "Absorbidor" : "Dens"}
+                  </Col>
+                </Row>
+              ) : (
+                ""
+              )}
               {w.name ? (
                 <Row>
                   <Col className="fieldsPopUp">Nom:</Col>
-                  <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>{`${w.name}`}</Col>
+                  <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
+                    {w.name}
+                  </Col>
                 </Row>
               ) : (
                 ""
@@ -115,7 +142,9 @@ export default function MapView(props: propsMapView) {
             </div>
           );
           createRoot(placeholder).render(popUp);
-          new mapboxgl.Marker({ color: w.isAutomatic ? "#ff6961" : "#84b6f4" })
+          new mapboxgl.Marker({
+            color: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
+          })
             .setLngLat([w.coordinates.x, w.coordinates.y])
             .setPopup(info)
             .addTo(map);
@@ -179,7 +208,7 @@ export default function MapView(props: propsMapView) {
         });
       });
     }
-  }, [expeditions, warehouses, areas, colorScale]);
+  }, [expeditions, warehouses, areas, colorScale, colorPopup]);
 
   return <div ref={mapDiv} className="map" />;
 }
