@@ -13,8 +13,8 @@
     width: 10px;      
     height: 10px;
     background-size: 100%;
-    background-color: aqua;
-    opacity: 20%;
+    background-color: #84b6f4;
+    opacity: 30%;
 }
 
 .checkPopUp{
@@ -32,6 +32,7 @@
 .popUp{
   width:max-content;
   align-items: center;
+  color: white;
 }
 
 .popUpButtons {
@@ -53,7 +54,7 @@
   padding-bottom: 10px;
   font-size: medium;
   border-width: 2px;
-  border-bottom-color: white;
+  border-bottom-color: black;
   border-bottom-style: solid;
   margin-left: 20px;
   margin-right: 20px;
@@ -61,4 +62,9 @@
 
 .mapboxgl-popup-content{
   border-radius: 30px;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
+  border-bottom-color: rgba(0, 0, 0, 0.9);
 }

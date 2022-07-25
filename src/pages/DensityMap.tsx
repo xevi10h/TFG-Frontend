@@ -91,6 +91,14 @@ function DensityMap(props: propsDensityMap) {
     setIsLoading(false);
   };
 
+  const maxPrevPoint = Number(localStorage.getItem("maxPrevPoint"));
+  const maxCurrPoint = Number(localStorage.getItem("maxCurrPoint"));
+  console.log(maxPrevPoint);
+  console.log(maxCurrPoint);
+
+  const totalPrevLoad = Number(localStorage.getItem("totalPrevLoad"));
+  const totalCurrLoad = Number(localStorage.getItem("totalCurrLoad"));
+
   return (
     <>
       {isLoading ? (
@@ -124,67 +132,67 @@ function DensityMap(props: propsDensityMap) {
               </Button>
             </Col>
             <Col>
-              {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
+              {maxPrevPoint ? (
                 <Row>
                   <Col className="keys">Alçada màxima anterior:</Col>{" "}
                   <Col className="values">
-                    {Number(localStorage.getItem("maxPrevPoint")) >= 10000000
-                      ? Number(localStorage.getItem("maxPrevPoint")).toExponential(2)
-                      : Number(Number(localStorage.getItem("maxPrevPoint")).toFixed(2)).toLocaleString("en-EN")}
+                    {maxPrevPoint >= 10000000
+                      ? maxPrevPoint.toExponential(2)
+                      : Number(maxPrevPoint.toFixed(2)).toLocaleString("en-EN")}
                   </Col>
                 </Row>
               ) : null}
               <Row>
                 <Col className="keys">Alçada màxima actual: </Col>
                 <Col className="values">
-                  {Number(localStorage.getItem("maxCurrPoint")) >= 10000000
-                    ? Number(localStorage.getItem("maxCurrPoint")).toExponential(2)
-                    : Number(Number(localStorage.getItem("maxCurrPoint")).toFixed(2)).toLocaleString("en-EN")}
+                  {maxCurrPoint >= 10000000
+                    ? maxCurrPoint.toExponential(2)
+                    : Number(maxCurrPoint.toFixed(2)).toLocaleString("en-EN")}
                 </Col>
               </Row>
-              {localStorage.getItem("maxPrevPoint") && localStorage.getItem("maxPrevPoint") !== "null" ? (
+              {maxPrevPoint ? (
                 <Row>
-                  <Col className="keys">Disminució d'alçada màxima:</Col>
-                  <Col className="values">
-                    {(
-                      ((Number(localStorage.getItem("maxPrevPoint")) - Number(localStorage.getItem("maxCurrPoint"))) /
-                        Number(localStorage.getItem("maxPrevPoint"))) *
-                      100
-                    ).toFixed(2)}{" "}
-                    %
+                  <Col className="keys">Increment d'alçada màxima:</Col>
+                  <Col
+                    className="values"
+                    style={{
+                      color: maxCurrPoint < maxPrevPoint ? "green" : maxCurrPoint == maxPrevPoint ? "yellow" : "red",
+                    }}
+                  >
+                    {(((maxCurrPoint - maxPrevPoint) / maxPrevPoint) * 100).toFixed(2)} %
                   </Col>
                 </Row>
               ) : null}
             </Col>
             <Col>
-              {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
+              {totalPrevLoad ? (
                 <Row>
                   <Col className="keys">Càrrega anterior:</Col>
                   <Col className="values">
-                    {Number(localStorage.getItem("totalPrevLoad")) >= 10000000
-                      ? Number(localStorage.getItem("totalPrevLoad")).toExponential(2)
-                      : Number(Number(localStorage.getItem("totalPrevLoad")).toFixed(2)).toLocaleString("en-EN")}
+                    {totalPrevLoad >= 10000000
+                      ? totalPrevLoad.toExponential(2)
+                      : Number(totalPrevLoad.toFixed(2)).toLocaleString("en-EN")}
                   </Col>
                 </Row>
               ) : null}
               <Row>
                 <Col className="keys">Càrrega actual:</Col>
                 <Col className="values">
-                  {Number(localStorage.getItem("totalCurrLoad")) >= 10000000
-                    ? Number(localStorage.getItem("totalCurrLoad")).toExponential(2)
-                    : Number(Number(localStorage.getItem("totalCurrLoad")).toFixed(2)).toLocaleString("en-EN")}
+                  {totalCurrLoad >= 10000000
+                    ? totalCurrLoad.toExponential(2)
+                    : Number(totalCurrLoad.toFixed(2)).toLocaleString("en-EN")}
                 </Col>
               </Row>
-              {localStorage.getItem("totalPrevLoad") && localStorage.getItem("totalPrevLoad") !== "null" ? (
+              {totalPrevLoad ? (
                 <Row>
-                  <Col className="keys">Disminució de càrrega:</Col>
-                  <Col className="values">
-                    {(
-                      ((Number(localStorage.getItem("totalPrevLoad")) - Number(localStorage.getItem("totalCurrLoad"))) /
-                        Number(localStorage.getItem("totalPrevLoad"))) *
-                      100
-                    ).toFixed(2)}{" "}
-                    %
+                  <Col className="keys">Increment de càrrega:</Col>
+                  <Col
+                    className="values"
+                    style={{
+                      color: maxCurrPoint < maxPrevPoint ? "green" : maxCurrPoint == maxPrevPoint ? "yellow" : "red",
+                    }}
+                  >
+                    {(((totalCurrLoad - totalPrevLoad) / totalPrevLoad) * 100).toFixed(2)} %
                   </Col>
                 </Row>
               ) : null}

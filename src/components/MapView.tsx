@@ -52,6 +52,7 @@ export default function MapView(props: propsMapView) {
       map.on("load", () => {
         warehouses.forEach((w: Warehouse) => {
           let checkbox: boolean = false;
+          const color = w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4";
           const placeholder = document.createElement("div");
           const info = new Popup({ closeButton: false, className: "popUpBackground" })
             .setDOMContent(placeholder)
@@ -63,8 +64,8 @@ export default function MapView(props: propsMapView) {
                 <Col
                   className="popUpTitle"
                   style={{
-                    color: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
-                    borderBottomColor: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
+                    color,
+                    borderBottomColor: color,
                   }}
                 >
                   MAGATZEM {w.isAutomatic ? "AUTOMÀTIC" : "MANUAL"}
@@ -122,7 +123,7 @@ export default function MapView(props: propsMapView) {
                 </Col>
                 <Col className="popUpButtons">
                   <Button
-                    variant="dark"
+                    style={{ backgroundColor: color, borderColor: color }}
                     onClick={() => {
                       setWarehousesRequest(
                         warehouses.reduce((prev: Warehouse[], curr: Warehouse) => {
