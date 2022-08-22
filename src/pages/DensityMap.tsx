@@ -49,9 +49,9 @@ function DensityMap(props: propsDensityMap) {
       },
       body: JSON.stringify({
         configValue,
-        dateRange: `${dateRange[0]},${dateRange[1]}`,
-        weightRange: `${weightRange[0]},${weightRange[1]}`,
-        volumeRange: `${volumeRange[0]},${volumeRange[1]}`,
+        dateRange,
+        weightRange,
+        volumeRange,
         warehouses: Array.isArray(warehousesRequest) ? warehousesRequest.map((w) => w.serialize) : undefined,
       }),
     });
@@ -138,7 +138,7 @@ function DensityMap(props: propsDensityMap) {
                   <Col className="values">
                     {maxPrevPoint >= 10000000
                       ? maxPrevPoint.toExponential(2)
-                      : Number(maxPrevPoint.toFixed(2)).toLocaleString("en-EN")}
+                      : Number(maxPrevPoint.toFixed(2)).toLocaleString("es-ES")}
                   </Col>
                 </Row>
               ) : null}
@@ -147,7 +147,7 @@ function DensityMap(props: propsDensityMap) {
                 <Col className="values">
                   {maxCurrPoint >= 10000000
                     ? maxCurrPoint.toExponential(2)
-                    : Number(maxCurrPoint.toFixed(2)).toLocaleString("en-EN")}
+                    : Number(maxCurrPoint.toFixed(2)).toLocaleString("es-ES")}
                 </Col>
               </Row>
               {maxPrevPoint ? (
@@ -171,7 +171,7 @@ function DensityMap(props: propsDensityMap) {
                   <Col className="values">
                     {totalPrevLoad >= 10000000
                       ? totalPrevLoad.toExponential(2)
-                      : Number(totalPrevLoad.toFixed(2)).toLocaleString("en-EN")}
+                      : Number(totalPrevLoad.toFixed(2)).toLocaleString("es-ES")}
                   </Col>
                 </Row>
               ) : null}
@@ -180,7 +180,7 @@ function DensityMap(props: propsDensityMap) {
                 <Col className="values">
                   {totalCurrLoad >= 10000000
                     ? totalCurrLoad.toExponential(2)
-                    : Number(totalCurrLoad.toFixed(2)).toLocaleString("en-EN")}
+                    : Number(totalCurrLoad.toFixed(2)).toLocaleString("es-ES")}
                 </Col>
               </Row>
               {totalPrevLoad ? (

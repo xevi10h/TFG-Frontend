@@ -93,6 +93,13 @@ function Home(props: propsHome) {
       ) : (
         <Row className="mainBox">
           <Row>
+            <Col style={{ textAlign: "center", fontSize: "x-large" }}>{`Repartiments filtrats: ${
+              expeditions.length >= 10000000
+                ? expeditions.length.toExponential(2)
+                : Number(expeditions.length.toFixed(2)).toLocaleString("es-ES")
+            }`}</Col>
+          </Row>
+          <Row>
             <Col>
               <MapView expeditions={expeditions} />
             </Col>
