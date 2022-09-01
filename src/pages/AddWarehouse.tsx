@@ -167,7 +167,7 @@ function AddWarehouse(props: propsAddWarehouse) {
               <Form.Control
                 type="number"
                 className="input"
-                placeholder={`Mínim: ${minRadius}`}
+                placeholder={`Mínim: ${Math.ceil(minRadius * 100) / 100}`}
                 value={radius}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRadius(Number(e.currentTarget.value))}
               />

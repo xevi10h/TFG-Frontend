@@ -68,3 +68,7 @@
 .mapboxgl-popup-anchor-top .mapboxgl-popup-tip{
   border-bottom-color: rgba(0, 0, 0, 0.9);
 }
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip{
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
