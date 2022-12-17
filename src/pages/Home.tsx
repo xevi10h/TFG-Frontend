@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Expedition from "../classes/Expedition";
 import { useEffect, useState } from "react";
 import { Point } from "mapbox-gl";
+import axios from "axios";
 
 interface propsHome {
   configValue: string | undefined;
@@ -46,12 +47,12 @@ function Home(props: propsHome) {
   const [expeditions, setExpeditions] = useState<Expedition[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   useEffect(() => {
-    fetchExpeditions();
+    getExpeditions();
     setMaxVolume(expeditions.reduce((prev: number, curr: Expedition) => (curr.volume > prev ? curr.volume : prev), 0));
     setMaxWeight(expeditions.reduce((prev: number, curr: Expedition) => (curr.weight > prev ? curr.weight : prev), 0));
   }, [isLoading]);
 
-  const fetchExpeditions = async (): Promise<void> => {
+  const getExpeditions = async (): Promise<void> => {
     let url = `http://localhost:8080/expeditions?dateRange=${dateRange[0]},${dateRange[1]}`;
     if (weightRange.length > 0) {
       url = `${url}&weightRange=${weightRange[0]},${weightRange[1]}`;
@@ -59,14 +60,12 @@ function Home(props: propsHome) {
     if (volumeRange.length > 0) {
       url = `${url}&volumeRange=${volumeRange[0]},${volumeRange[1]}`;
     }
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    const rawExpeditions = await response.json();
-    // rawExpeditions = rawExpeditions.slice(0, 100000)
+    const config = {
+      method: "get",
+      url,
+    };
+    const response = await axios(config);
+    const rawExpeditions = await response.data;
     const expeditions: Expedition[] = [];
     rawExpeditions.forEach((expedition: rawExpedition) => {
       expeditions.push(

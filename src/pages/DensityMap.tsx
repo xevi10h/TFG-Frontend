@@ -7,6 +7,7 @@ import Warehouse from "../classes/Warehouse";
 import { useEffect, useState } from "react";
 import { rawWarehouse } from "../interfaces/rawWarehouse";
 import { rawArea } from "../interfaces/rawArea";
+import axios from "axios";
 
 interface propsDensityMap {
   warehouses?: Warehouse[];
@@ -37,25 +38,26 @@ function DensityMap(props: propsDensityMap) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [colorScale, setColorScale] = useState<string>("linear");
   useEffect(() => {
-    fetchAreas();
+    getAreas();
   }, [warehousesRequest]);
 
-  const fetchAreas = async (): Promise<void> => {
-    let url = `http://localhost:8080/areas`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
+  const getAreas = async (): Promise<void> => {
+    const config = {
+      url: `http://localhost:8080/areas`,
+      method: "post",
+      data: JSON.stringify({
         configValue,
         dateRange,
         weightRange,
         volumeRange,
         warehouses: Array.isArray(warehousesRequest) ? warehousesRequest.map((w) => w.serialize) : undefined,
       }),
-    });
-    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint, totalLoad } = await response.json();
+      headers: {
+        "Content-type": "application/json",
+      },
+    };
+    const response = await axios(config);
+    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint, totalLoad } = await response.data();
     const areas: Area[] = [];
     rawAreas.forEach((area: rawArea) => {
       areas.push(new Area(area.id, area.coordinates, area.value));
