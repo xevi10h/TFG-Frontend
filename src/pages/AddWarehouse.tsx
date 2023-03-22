@@ -1,42 +1,37 @@
 import "./AddWarehouse.css";
-import { Row, Col, Form, Button } from "react-bootstrap";
+import { Row, Col, Form, Button, Tooltip, OverlayTrigger } from "react-bootstrap";
+import { InfoCircle } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Warehouse from "../classes/Warehouse";
 import Area from "../classes/Area";
 import { Point } from "mapbox-gl";
+import IWarehouse from "../interfaces/IWarehouse";
 
 interface propsAddNewWarehouses {
-  warehouses: Warehouse[];
+  newWarehouse: IWarehouse;
   setWarehousesRequest: Function;
-  option: string;
-  radius: number;
-  name: string;
   numWarehouses: number;
-  manualCoordinates: number[];
-  strategy: string;
 }
 
 async function addNewWarehouses(props: propsAddNewWarehouses) {
-  const { warehouses, setWarehousesRequest, option, radius, name, numWarehouses, manualCoordinates, strategy } = props;
-  const lastWarehouseId = warehouses.reduce((prev: number, curr: Warehouse) => (curr.id > prev ? curr.id : prev), 0);
-  if (option === "automatic") {
-    const newWarehouses: Warehouse[] = [];
-    for (let i = 0; i < numWarehouses; i++) {
-      newWarehouses.push(new Warehouse(lastWarehouseId + 1 + i, true, radius, undefined, undefined, strategy));
-    }
-    await setWarehousesRequest([...warehouses, ...newWarehouses]);
-  }
-  if (option === "manual") {
-    const newWarehouse = new Warehouse(
-      lastWarehouseId + 1,
-      false,
-      radius,
-      new Point(manualCoordinates[0], manualCoordinates[1]),
-      name
+  const { newWarehouse, setWarehousesRequest, numWarehouses } = props;
+  console.log(222, newWarehouse);
+  const newWarehouses: Warehouse[] = [];
+  for (let i = 0; i < (newWarehouse?.isAutomatic ? numWarehouses : 1); i++) {
+    newWarehouses.push(
+      new Warehouse({
+        name: newWarehouse.name || `Automatic ${i}`,
+        isAutomatic: newWarehouse.isAutomatic,
+        coordinates: newWarehouse.coordinates,
+        model: newWarehouse.model,
+        maxRadius: newWarehouse.maxRadius,
+        maxCapacity: newWarehouse.maxCapacity,
+      })
     );
-    await setWarehousesRequest([...warehouses, newWarehouse]);
   }
+  console.log(111, newWarehouses);
+  await setWarehousesRequest(newWarehouses);
 }
 
 interface propsAddWarehouse {
@@ -46,132 +41,217 @@ interface propsAddWarehouse {
 }
 
 function AddWarehouse(props: propsAddWarehouse) {
-  const { warehouses, setWarehousesRequest, minRadius = 0 } = props;
+  const { setWarehousesRequest, minRadius = 0 } = props;
   const navigate = useNavigate();
-  const [option, setOption] = useState<string | undefined>(undefined);
-  const [radius, setRadius] = useState<number | undefined>(undefined);
-  const [numWarehouses, setNumWarehouses] = useState<number>(0);
-  const [manualCoordinates, setManualCoordinates] = useState<number[]>([0, 0]);
-  const [name, setName] = useState<string>("");
-  const [strategy, setStrategy] = useState<string | undefined>(undefined);
+  const [newWarehouse, setNewWarehouse] = useState<IWarehouse>(undefined);
+  console.log(newWarehouse);
+  const [numWarehouses, setNumWarehouses] = useState<number>(1);
+  const [strategy, setStrategy] = useState<string>("");
   return (
     <Row className="valueConfigBox">
       <Col>
         <Form className="form">
-          <Row>
+          <Row className="rowWarehouse">
             <Col>
-              <Form.Label className="title">Afageix magatzems</Form.Label>
+              <Form.Label>Escull model amb el que actuarà el magatzem:</Form.Label>
+            </Col>
+          </Row>
+          <Row>
+            <Col className="d-flex justify-content-center">
+              <img
+                src="https://www.sky-engin.jp/en/MATLABAnimation/chap07/make_cylinder_special_R.png"
+                alt="cilindro"
+                width={"50%"}
+              />
+            </Col>
+            <Col className="d-flex justify-content-center">
+              <img
+                src="https://www.researchgate.net/publication/305775549/figure/fig10/AS:390719329062921@1470166155734/Figura-48-Funcion-gaussiana-bidimensional-continua-con-s-1-2.png"
+                alt="gaussianaBidimensional"
+                width={"50%"}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col className="d-flex justify-content-center">
+              <Form.Check
+                className="checkModel"
+                type="radio"
+                id="manual"
+                label="Cilíndric"
+                value="cylinder"
+                checked={newWarehouse?.model === "cylinder"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, model: e.target.value })
+                }
+              />
+            </Col>
+            <Col className="d-flex justify-content-center">
+              <Form.Check
+                className="checkModel"
+                type="radio"
+                id="manual"
+                label="Gaussiana"
+                value="gaussian"
+                checked={newWarehouse?.model === "gaussian"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, model: e.target.value })
+                }
+              />
             </Col>
           </Row>
           <Row className="rowWarehouse">
+            <Col>
+              <Form.Label>Escull estratègia:</Form.Label>
+            </Col>
+          </Row>
+          <Row>
+            <Col className="colLabel">
+              <Form.Check
+                className="label"
+                type="radio"
+                label="Radi màxim:"
+                value="maxRadius"
+                disabled={!newWarehouse?.model}
+                checked={strategy === "maxRadius"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
+              />
+              <Form.Control
+                type="number"
+                className="input"
+                disabled={!newWarehouse?.model || strategy !== "maxRadius"}
+                value={newWarehouse?.maxRadius}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, maxRadius: Number(e.currentTarget.value) })
+                }
+              />
+            </Col>
+            <Col className="colLabel">
+              <Form.Check
+                className="label"
+                type="radio"
+                label="Capacitat màxima:"
+                value="maxCapacity"
+                disabled={!newWarehouse?.model}
+                checked={strategy === "maxCapacity"}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
+              />
+              <Form.Control
+                type="number"
+                className="input"
+                disabled={!newWarehouse?.model || strategy !== "maxCapacity"}
+                value={newWarehouse?.maxCapacity}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, maxCapacity: Number(e.currentTarget.value) })
+                }
+              />
+            </Col>
+          </Row>
+          <Row className="rowWarehouse">
+            <Col>
+              <Form.Label>Escull tipus de magatzem:</Form.Label>
+            </Col>
+          </Row>
+          <Row>
             <Col>
               <Form.Check
                 className="check"
                 type="radio"
                 id="manual"
-                label="Afegir un magatzem manualment"
+                label="Magatzem manual"
                 value="manual"
-                checked={option === "manual"}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOption(e.target.value)}
+                checked={newWarehouse?.isAutomatic === false}
+                disabled={!newWarehouse?.model || !strategy}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, isAutomatic: false })
+                }
               />
             </Col>
             <Col className="colLabel">
               <Form.Label className="labelSecondary">Nom:</Form.Label>
               <Form.Control
                 className="inputSecondary"
-                disabled={option !== "manual"}
-                value={name}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.currentTarget.value)}
+                disabled={newWarehouse?.isAutomatic !== false}
+                value={newWarehouse?.name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewWarehouse({ ...newWarehouse, name: e.target.value })
+                }
               />
               <Form.Label className="labelSecondary">Latitud:</Form.Label>
               <Form.Control
                 type="number"
                 className="inputSecondary"
-                disabled={option !== "manual"}
-                value={manualCoordinates[0]}
+                disabled={newWarehouse?.isAutomatic !== false}
+                value={newWarehouse?.coordinates?.latitude}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setManualCoordinates([Number(e.currentTarget.value), manualCoordinates[1]])
+                  setNewWarehouse({
+                    ...newWarehouse,
+                    coordinates: {
+                      longitude: newWarehouse?.coordinates?.longitude,
+                      latitude: Number(e.currentTarget.value),
+                    },
+                  })
                 }
               />
               <Form.Label className="labelSecondary">Longitud:</Form.Label>
               <Form.Control
                 type="number"
                 className="inputSecondary"
-                disabled={option !== "manual"}
-                value={manualCoordinates[1]}
+                disabled={newWarehouse?.isAutomatic !== false}
+                value={newWarehouse?.coordinates?.longitude}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setManualCoordinates([manualCoordinates[0], Number(e.currentTarget.value)])
+                  setNewWarehouse({
+                    ...newWarehouse,
+                    coordinates: {
+                      latitude: newWarehouse?.coordinates?.latitude,
+                      longitude: Number(e.currentTarget.value),
+                    },
+                  })
                 }
               />
             </Col>
           </Row>
           <Row className="rowWarehouse">
             <Col>
-              <Form.Check
-                className="check"
-                type="radio"
-                id="automatic"
-                label="Afegir magatzems òptims"
-                value="automatic"
-                checked={option === "automatic"}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOption(e.target.value)}
-              />
+              <Form style={{ display: "inline-flex" }}>
+                <Form.Check
+                  className="check"
+                  type="radio"
+                  id="automatic"
+                  label="Magatzem/s òptim/s"
+                  value="automatic"
+                  checked={newWarehouse?.isAutomatic}
+                  disabled={!newWarehouse?.model || !strategy}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setNewWarehouse({ ...newWarehouse, isAutomatic: true })
+                  }
+                  feedbackTooltip={true}
+                />{" "}
+                <span className="tooltipIcon">
+                  <OverlayTrigger
+                    placement="bottom"
+                    overlay={
+                      <Tooltip>
+                        {" "}
+                        En cas que s'esculli un radi màxim, la capacitat se suposarà il·limitada (i viceversa) a l'hora
+                        de calcular la millor ubicació del magatzem
+                      </Tooltip>
+                    }
+                  >
+                    <InfoCircle />
+                  </OverlayTrigger>
+                </span>
+              </Form>
             </Col>
             <Col className="colLabel">
               <Form.Label className="labelSecondary">Nombre de magatzems:</Form.Label>
               <Form.Control
-                type="number"
+                disabled={newWarehouse?.isAutomatic !== true}
                 className="inputSecondary"
-                disabled={option !== "automatic"}
+                type="number"
                 value={numWarehouses}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNumWarehouses(Number(e.currentTarget.value))}
               />
-            </Col>
-          </Row>
-          <Row className="rowWarehouseSecondary">
-            <Col>
-              <Form.Label className="labelSecondary">Possibles estratègies:</Form.Label>
-            </Col>
-          </Row>
-          <Row className="rowWarehouseSecondary">
-            <Col>
-              <Form.Check
-                disabled={option !== "automatic"}
-                className="labelSecondary"
-                type="radio"
-                id="integral"
-                label="Absorbir màxima càrrega (Tipus => Absorbidor)"
-                value="integral"
-                checked={strategy === "integral"}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
-              />
-            </Col>
-          </Row>
-          <Row className="rowWarehouseSecondary">
-            <Col>
-              <Form.Check
-                disabled={option !== "automatic"}
-                className="labelSecondary"
-                type="radio"
-                id="maxArea"
-                label="Ubicar en el punt amb més densitats de paquets (Tipus => Dens)"
-                value="maxArea"
-                checked={strategy === "maxArea"}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStrategy(e.target.value)}
-              />
-            </Col>
-          </Row>
-          <Row className="rowWarehouse">
-            <Col className="colLabel">
-              <Form.Label className="label">Radi d'actuació:</Form.Label>
-              <Form.Control
-                type="number"
-                className="input"
-                placeholder={`Mínim: ${Math.ceil(minRadius * 100) / 100}`}
-                value={radius}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRadius(Number(e.currentTarget.value))}
-              />
-              <Form.Label className="label">kms</Form.Label>
             </Col>
           </Row>
           <Row>
@@ -189,23 +269,27 @@ function AddWarehouse(props: propsAddWarehouse) {
             <Col>
               <Button
                 disabled={
-                  !radius ||
-                  radius < minRadius ||
-                  option === undefined ||
-                  (option === "automatic" && (strategy === undefined || numWarehouses <= 0))
+                  newWarehouse?.model === undefined ||
+                  (strategy === "maxRadius" && newWarehouse?.maxRadius <= 0) ||
+                  (strategy === "maxCapacity" && newWarehouse?.maxCapacity <= 0) ||
+                  newWarehouse?.maxCapacity < 0 ||
+                  newWarehouse?.isAutomatic === undefined ||
+                  (newWarehouse?.isAutomatic === true && numWarehouses <= 0) ||
+                  (newWarehouse?.isAutomatic === false &&
+                    (!newWarehouse?.name ||
+                      newWarehouse?.coordinates?.latitude > 90 ||
+                      newWarehouse?.coordinates?.latitude < -90 ||
+                      newWarehouse?.coordinates?.longitude > 180 ||
+                      newWarehouse?.coordinates?.longitude < -180 ||
+                      (!newWarehouse?.maxCapacity && !newWarehouse?.maxRadius)))
                 }
                 variant="primary"
                 className="button"
                 onClick={async () => {
                   await addNewWarehouses({
-                    warehouses,
+                    newWarehouse,
                     setWarehousesRequest,
-                    option,
-                    radius: radius || 0,
-                    name,
                     numWarehouses,
-                    manualCoordinates,
-                    strategy,
                   });
                   navigate("/densityMap");
                 }}

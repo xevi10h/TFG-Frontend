@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 import Area from "../classes/Area";
 import Warehouse from "../classes/Warehouse";
 import { useEffect, useState } from "react";
-import { rawWarehouse } from "../interfaces/rawWarehouse";
-import { rawArea } from "../interfaces/rawArea";
+import IWarehouse from "../interfaces/IWarehouse";
+import { IArea } from "../interfaces/IArea";
 import axios from "axios";
 
 interface propsDensityMap {
@@ -37,50 +37,51 @@ function DensityMap(props: propsDensityMap) {
   const [areas, setAreas] = useState<Area[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [colorScale, setColorScale] = useState<string>("linear");
+  const [recalculateWarehousesRequest, setRecalculateWarhousesRequest] = useState<string>(undefined);
   useEffect(() => {
-    getAreas();
+    createWarehouses();
   }, [warehousesRequest]);
 
+  useEffect(() => {
+    if (recalculateWarehousesRequest === "priority") {
+      recalculateWarehouses();
+    }
+  }, [recalculateWarehousesRequest]);
+
   const getAreas = async (): Promise<void> => {
+    const url = new URL("http://localhost:8080/areas");
+    if (configValue) {
+      url.searchParams.append("configValue", configValue);
+    }
+    if (dateRange) {
+      dateRange.forEach((date) => {
+        url.searchParams.append("dateRange[]", date);
+      });
+    }
+    if (weightRange) {
+      weightRange.forEach((weight) => {
+        weight && url.searchParams.append("weightRange[]", weight.toString());
+      });
+    }
+    if (volumeRange) {
+      volumeRange.forEach((volume) => {
+        volume && url.searchParams.append("volumeRange[]", volume.toString());
+      });
+    }
     const config = {
-      url: `http://localhost:8080/areas`,
-      method: "post",
-      data: JSON.stringify({
-        configValue,
-        dateRange,
-        weightRange,
-        volumeRange,
-        warehouses: Array.isArray(warehousesRequest) ? warehousesRequest.map((w) => w.serialize) : undefined,
-      }),
+      url: url.href,
+      method: "get",
       headers: {
         "Content-type": "application/json",
       },
     };
     const response = await axios(config);
-    const { areas: rawAreas, warehouses: rawWarehouses, minRadius, maxNewPoint, totalLoad } = await response.data();
+    const { areas: rawAreas, minRadius, maxNewPoint, totalLoad, warehouses } = await response.data;
     const areas: Area[] = [];
-    rawAreas.forEach((area: rawArea) => {
-      areas.push(new Area(area.id, area.coordinates, area.value));
+    rawAreas.forEach((area: IArea) => {
+      areas.push(new Area(area));
     });
-    const warehousesLocated: Warehouse[] = [];
-    if (Array.isArray(rawWarehouses) && rawWarehouses.length > 0) {
-      rawWarehouses.forEach((warehouse: rawWarehouse) => {
-        warehousesLocated.push(
-          new Warehouse(
-            warehouse.id,
-            warehouse.isAutomatic,
-            warehouse.radius,
-            warehouse.coordinates,
-            warehouse.name,
-            warehouse.strategy,
-            warehouse.absorbedLoad,
-            warehouse.isFixed
-          )
-        );
-      });
-    }
     setAreas(areas);
-    setWarehouses(warehousesLocated);
     setMinRadius(minRadius);
     if (maxNewPoint !== Number(localStorage.getItem("maxCurrPoint"))) {
       localStorage.setItem("maxPrevPoint", localStorage.getItem("maxCurrPoint"));
@@ -90,7 +91,73 @@ function DensityMap(props: propsDensityMap) {
       localStorage.setItem("totalPrevLoad", localStorage.getItem("totalCurrLoad"));
       localStorage.setItem("totalCurrLoad", totalLoad.toString());
     }
+    const warehousesLocated: Warehouse[] = [];
+    if (Array.isArray(warehouses) && warehouses.length > 0) {
+      warehouses.forEach((warehouse: IWarehouse, index) => {
+        warehousesLocated.push(new Warehouse(warehouse));
+      });
+    }
+    setWarehouses(warehousesLocated);
+  };
+
+  const createWarehouses = async (): Promise<void> => {
+    if (Array.isArray(warehousesRequest)) {
+      await Promise.all(
+        warehousesRequest.map(async (warehouse) => {
+          try {
+            const url = new URL("http://localhost:8080/warehouse");
+            const config = {
+              url: url.href,
+              method: "post",
+              data: {
+                configValue,
+                filters: {},
+                warehouse,
+              },
+              headers: {
+                "Content-type": "application/json",
+              },
+            };
+            await axios(config);
+          } catch (error) {
+            console.log(error);
+          }
+        })
+      );
+    }
+    console.log(3333, warehousesRequest);
+    await getAreas();
     setIsLoading(false);
+  };
+
+  const recalculateWarehouses = async (): Promise<void> => {
+    const url = new URL("http://localhost:8080/warehouse");
+    if (configValue) {
+      url.searchParams.append("configValue", configValue);
+    }
+    if (dateRange) {
+      dateRange.forEach((date) => {
+        url.searchParams.append("dateRange[]", date);
+      });
+    }
+    if (weightRange) {
+      weightRange.forEach((weight) => {
+        weight && url.searchParams.append("weightRange[]", weight.toString());
+      });
+    }
+    if (volumeRange) {
+      volumeRange.forEach((volume) => {
+        volume && url.searchParams.append("volumeRange[]", volume.toString());
+      });
+    }
+    const config = {
+      url: url.href,
+      method: "patch",
+      headers: {
+        "Content-type": "application/json",
+      },
+    };
+    await axios(config);
   };
 
   const maxPrevPoint = Number(localStorage.getItem("maxPrevPoint"));
@@ -133,6 +200,16 @@ function DensityMap(props: propsDensityMap) {
                 Enrere
               </Button>
             </Col>
+            <Col className="colButtons">
+              <Button
+                onClick={() => {
+                  setRecalculateWarhousesRequest("priority");
+                }}
+                size="lg"
+              >
+                Recalcular magatzems
+              </Button>
+            </Col>
             <Col>
               {maxPrevPoint ? (
                 <Row>
@@ -140,7 +217,7 @@ function DensityMap(props: propsDensityMap) {
                   <Col className="values">
                     {maxPrevPoint >= 10000000
                       ? maxPrevPoint.toExponential(2)
-                      : Number(maxPrevPoint.toFixed(2)).toLocaleString("es-ES")}
+                      : Number(maxPrevPoint?.toFixed(2)).toLocaleString("es-ES")}
                   </Col>
                 </Row>
               ) : null}
@@ -149,7 +226,7 @@ function DensityMap(props: propsDensityMap) {
                 <Col className="values">
                   {maxCurrPoint >= 10000000
                     ? maxCurrPoint.toExponential(2)
-                    : Number(maxCurrPoint.toFixed(2)).toLocaleString("es-ES")}
+                    : Number(maxCurrPoint?.toFixed(2)).toLocaleString("es-ES")}
                 </Col>
               </Row>
               {maxPrevPoint ? (
@@ -198,6 +275,11 @@ function DensityMap(props: propsDensityMap) {
                   </Col>
                 </Row>
               ) : null}
+            </Col>
+            <Col className="colButtons">
+              <Button onClick={() => navigate("/addWarehouse")} size="lg" disabled={!configValue}>
+                Llistat de magatzems
+              </Button>
             </Col>
             <Col className="colButtons">
               <Button onClick={() => navigate("/addWarehouse")} size="lg" disabled={!configValue}>

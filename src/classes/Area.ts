@@ -1,4 +1,5 @@
 import { GeoJSONSourceRaw, Point } from "mapbox-gl";
+import { IArea } from "../interfaces/IArea";
 
 export default class Area {
   private readonly _id: number;
@@ -6,11 +7,10 @@ export default class Area {
   private _value: number;
   private _colorValue: number;
 
-  constructor(id: number, coordinates: Array<Array<number>>, value: number = 0, colorValue?: number) {
-    this._id = id;
-    this._coordinates = coordinates;
-    this._value = value;
-    this._colorValue = colorValue;
+  constructor(area: IArea) {
+    this._id = area.id;
+    this._coordinates = area.coordinates;
+    this._value = area.value;
   }
 
   public set value(value: number) {
@@ -39,19 +39,19 @@ export default class Area {
 
   public get centerPoint(): Point {
     return new Point(
-      (this._coordinates[0][1] - this._coordinates[0][0]) / 2 + this._coordinates[0][0],
-      (this._coordinates[1][1] - this._coordinates[1][0]) / 2 + this._coordinates[1][0]
+      (this._coordinates[1][1] - this._coordinates[1][0]) / 2 + this._coordinates[1][0],
+      (this._coordinates[0][1] - this._coordinates[0][0]) / 2 + this._coordinates[0][0]
     );
   }
 
   public get coordinatesForMapbox(): Array<Array<Array<number>>> {
     return [
       [
-        [this._coordinates[0][0], this._coordinates[1][0]],
-        [this._coordinates[0][1], this._coordinates[1][0]],
-        [this._coordinates[0][1], this._coordinates[1][1]],
-        [this._coordinates[0][0], this._coordinates[1][1]],
-        [this._coordinates[0][0], this._coordinates[1][0]],
+        [this._coordinates[1][0], this._coordinates[0][0]],
+        [this._coordinates[1][1], this._coordinates[0][0]],
+        [this._coordinates[1][1], this._coordinates[0][1]],
+        [this._coordinates[1][0], this._coordinates[0][1]],
+        [this._coordinates[1][0], this._coordinates[0][0]],
       ],
     ];
   }

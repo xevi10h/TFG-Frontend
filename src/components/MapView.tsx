@@ -51,8 +51,9 @@ export default function MapView(props: propsMapView) {
     if (Array.isArray(warehouses) && warehouses.length > 0) {
       map.on("load", () => {
         warehouses.forEach((w: Warehouse) => {
+          console.log(w);
           let checkbox: boolean = false;
-          const color = w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4";
+          const color = w.isAutomatic ? (w.maxCapacity ? "#FF6961" : "#EFA94A") : "#84B6F4";
           const placeholder = document.createElement("div");
           const info = new Popup({ closeButton: false, className: "popUpBackground" })
             .setDOMContent(placeholder)
@@ -71,11 +72,11 @@ export default function MapView(props: propsMapView) {
                   MAGATZEM {w.isAutomatic ? "AUTOMÀTIC" : "MANUAL"}
                 </Col>
               </Row>
-              {w.strategy ? (
+              {w.isAutomatic ? (
                 <Row>
                   <Col className="fieldsPopUp">Tipus:</Col>
                   <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
-                    {w.strategy === "integral" ? "Absorbidor" : "Dens"}
+                    {w.maxCapacity ? "Capacitat il·limitada" : "Radi il·limitat"}
                   </Col>
                 </Row>
               ) : (
@@ -92,17 +93,23 @@ export default function MapView(props: propsMapView) {
                 ""
               )}
               <Row>
-                <Col className="fieldsPopUp">Coordenades: </Col>
-                <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>{`[${w.coordinates.x.toFixed(
+                <Col className="fieldsPopUp">Latitud: </Col>
+                <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
+                  {`${w?.coordinates?.latitude?.toFixed(4)}`}
+                </Col>
+              </Row>
+              <Row>
+                <Col className="fieldsPopUp">Longitud: </Col>
+                <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>{`${w.coordinates?.longitude?.toFixed(
                   4
-                )}, ${w.coordinates.y.toFixed(4)}]`}</Col>
+                )}`}</Col>
               </Row>
               <Row>
                 <Col className="fieldsPopUp">Càrrega absorbida:</Col>
                 <Col className="fieldsPopUp" style={{ fontWeight: "bold" }}>
-                  {w.absorbedLoad >= 10000000
-                    ? w.absorbedLoad.toExponential(2)
-                    : Number(Number(w.absorbedLoad.toFixed(2))).toLocaleString("en-EN")}
+                  {w.capacity >= 10000000
+                    ? w.capacity.toExponential(2)
+                    : Number(Number(w?.capacity?.toFixed(2))).toLocaleString("en-EN")}
                 </Col>
               </Row>
               <Row>
@@ -127,10 +134,6 @@ export default function MapView(props: propsMapView) {
                     onClick={() => {
                       setWarehousesRequest(
                         warehouses.reduce((prev: Warehouse[], curr: Warehouse) => {
-                          if (curr.id !== w.id) {
-                            curr.isFixed = checkbox;
-                            prev.push(curr);
-                          }
                           return prev;
                         }, [])
                       );
@@ -144,9 +147,9 @@ export default function MapView(props: propsMapView) {
           );
           createRoot(placeholder).render(popUp);
           new mapboxgl.Marker({
-            color: w.isAutomatic ? (w.strategy === "integral" ? "#FF6961" : "#EFA94A") : "#84B6F4",
+            color: w.isAutomatic ? (w.maxCapacity ? "#FF6961" : "#EFA94A") : "#84B6F4",
           })
-            .setLngLat([w.coordinates.x, w.coordinates.y])
+            .setLngLat([w.coordinates.longitude, w.coordinates.latitude])
             .setPopup(info)
             .addTo(map);
         });

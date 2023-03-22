@@ -53,16 +53,33 @@ function Home(props: propsHome) {
   }, [isLoading]);
 
   const getExpeditions = async (): Promise<void> => {
-    let url = `http://localhost:8080/expeditions?dateRange=${dateRange[0]},${dateRange[1]}`;
-    if (weightRange.length > 0) {
-      url = `${url}&weightRange=${weightRange[0]},${weightRange[1]}`;
+    console.log(weightRange);
+    console.log(volumeRange);
+    const url = new URL("http://localhost:8080/expeditions");
+    if (configValue) {
+      url.searchParams.append("configValue", configValue);
     }
-    if (volumeRange.length > 0) {
-      url = `${url}&volumeRange=${volumeRange[0]},${volumeRange[1]}`;
+    if (dateRange) {
+      dateRange.forEach((date) => {
+        url.searchParams.append("dateRange[]", date);
+      });
+    }
+    if (weightRange) {
+      weightRange.forEach((weight) => {
+        weight && url.searchParams.append("weightRange[]", weight.toString());
+      });
+    }
+    if (volumeRange) {
+      volumeRange.forEach((volume) => {
+        volume && url.searchParams.append("volumeRange[]", volume.toString());
+      });
     }
     const config = {
+      url: url.href,
       method: "get",
-      url,
+      headers: {
+        "Content-type": "application/json",
+      },
     };
     const response = await axios(config);
     const rawExpeditions = await response.data;

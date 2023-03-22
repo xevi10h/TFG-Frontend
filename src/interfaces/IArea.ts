@@ -1,4 +1,4 @@
-export interface rawArea {
+export interface IArea {
   id: number;
   coordinates: number[][];
   value: number;
